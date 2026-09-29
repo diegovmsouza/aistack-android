@@ -2,6 +2,7 @@ package br.com.amberwrite.aistack
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -77,6 +78,14 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, "Pareamento recebido via link!", Toast.LENGTH_SHORT).show()
                 connectWithLink(link)
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val client = activeRelayClient
+        if (client != null && client.state.value != RelayState.ONLINE && client.state.value != RelayState.CONNECTING) {
+            client.connect()
         }
     }
 
@@ -202,13 +211,25 @@ class MainActivity : ComponentActivity() {
                 scope.launch {
                     try {
                         val result = client?.call("listConversations")
+                        conversations.clear()
                         result?.asJsonArray?.forEach { elem ->
                             val obj = elem.asJsonObject
                             val id = obj.get("id")?.asString ?: ""
                             val title = obj.get("title")?.asString ?: ""
                             val provStr = obj.get("provider")?.asString
                             val prov = Provider.fromId(provStr)
-                            val upd = obj.get("updatedAt")?.asLong ?: 0L
+                            val upd = try {
+                                obj.get("updatedAt")?.asLong ?: 0L
+                            } catch (_: Exception) {
+                                try {
+                                    val s = obj.get("updatedAt")?.asString
+                                    if (s != null) {
+                                        java.time.Instant.parse(s).toEpochMilli()
+                                    } else 0L
+                                } catch (_: Exception) {
+                                    0L
+                                }
+                            }
                             conversations.add(
                                 ConversationItem(
                                     id = id,
@@ -223,11 +244,36 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         if (conversations.isNotEmpty() && activeConvId == null) {
-                            activeConvId = conversations.first().id
-                            currentProvider = conversations.first().provider
+                            val first = conversations.first()
+                            activeConvId = first.id
+                            currentProvider = first.provider
+                            try {
+                                val convData = client?.call("getConversation", mapOf("id" to first.id))?.asJsonObject
+                                val blocks = convData?.getAsJsonArray("blocks")
+                                blocks?.forEach { blockElem ->
+                                    val bObj = blockElem.asJsonObject
+                                    val kind = bObj.get("kind")?.asString ?: "text"
+                                    val content = bObj.get("content")?.asJsonObject
+                                    val blockId = bObj.get("id")?.asString ?: System.currentTimeMillis().toString()
+                                    when (kind) {
+                                        "user" -> {
+                                            val txt = content?.get("text")?.asString ?: ""
+                                            messages.add(ChatMessage(id = blockId, role = "user", blocks = listOf(ChatBlock.Text(id = blockId, text = txt))))
+                                        }
+                                        "text" -> {
+                                            val txt = content?.get("text")?.asString ?: ""
+                                            messages.add(ChatMessage(id = blockId, role = "assistant", blocks = listOf(ChatBlock.Text(id = blockId, text = txt))))
+                                        }
+                                        "thought" -> {
+                                            val txt = content?.get("text")?.asString ?: ""
+                                            messages.add(ChatMessage(id = blockId, role = "assistant", blocks = listOf(ChatBlock.Thinking(id = blockId, text = txt))))
+                                        }
+                                    }
+                                }
+                            } catch (_: Exception) {}
                         }
                     } catch (e: Exception) {
-                        // Tratar erro
+                        Log.e("MainActivity", "Erro listando conversas: ${e.message}", e)
                     }
                 }
             }
@@ -258,7 +304,37 @@ class MainActivity : ComponentActivity() {
                         onSelectConversation = { id ->
                             activeConvId = id
                             messages.clear()
-                            scope.launch { drawerState.close() }
+                            val selectedConv = conversations.find { it.id == id }
+                            if (selectedConv != null) {
+                                currentProvider = selectedConv.provider
+                            }
+                            scope.launch {
+                                try {
+                                    val convData = client?.call("getConversation", mapOf("id" to id))?.asJsonObject
+                                    val blocks = convData?.getAsJsonArray("blocks")
+                                    blocks?.forEach { blockElem ->
+                                        val bObj = blockElem.asJsonObject
+                                        val kind = bObj.get("kind")?.asString ?: "text"
+                                        val content = bObj.get("content")?.asJsonObject
+                                        val blockId = bObj.get("id")?.asString ?: System.currentTimeMillis().toString()
+                                        when (kind) {
+                                            "user" -> {
+                                                val txt = content?.get("text")?.asString ?: ""
+                                                messages.add(ChatMessage(id = blockId, role = "user", blocks = listOf(ChatBlock.Text(id = blockId, text = txt))))
+                                            }
+                                            "text" -> {
+                                                val txt = content?.get("text")?.asString ?: ""
+                                                messages.add(ChatMessage(id = blockId, role = "assistant", blocks = listOf(ChatBlock.Text(id = blockId, text = txt))))
+                                            }
+                                            "thought" -> {
+                                                val txt = content?.get("text")?.asString ?: ""
+                                                messages.add(ChatMessage(id = blockId, role = "assistant", blocks = listOf(ChatBlock.Thinking(id = blockId, text = txt))))
+                                            }
+                                        }
+                                    }
+                                } catch (_: Exception) {}
+                                drawerState.close()
+                            }
                         },
                         onNewConversation = {
                             activeConvId = null

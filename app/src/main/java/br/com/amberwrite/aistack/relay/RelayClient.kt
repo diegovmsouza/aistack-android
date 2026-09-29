@@ -74,6 +74,7 @@ class RelayClient(
 
     // Estado temporário do handshake
     private var handshakeStep = 0
+    private var keyAuthRpcId: Long? = null
     private var clientHelloBytes: ByteArray? = null
     private var hostHelloBytes: ByteArray? = null
 
@@ -226,6 +227,7 @@ class RelayClient(
                     handshakeStep = 4
                     // keyAuth via RPC
                     val rpcId = nextRpcId.getAndIncrement()
+                    keyAuthRpcId = rpcId
                     val keyAuthMsg = RelayProtocol.RpcMessage(
                         id = rpcId,
                         method = "keyAuth",
@@ -273,7 +275,7 @@ class RelayClient(
                         } else {
                             deferred.complete(root.get("result") ?: root)
                         }
-                    } else if (id == 1L && handshakeStep == 4) {
+                    } else if ((id == 1L || id == keyAuthRpcId) && handshakeStep == 4) {
                         // Resposta do keyAuth inicial
                         Log.i(tag, "keyAuth autenticado com sucesso! Túnel ONLINE.")
                         _state.value = RelayState.ONLINE
