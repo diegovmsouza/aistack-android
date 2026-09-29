@@ -124,6 +124,7 @@ class RelayClient(
             } catch (e: Exception) {
                 Log.e(tag, "Erro processando quadro: ${e.message}", e)
                 _lastError.value = e.message
+                _state.value = RelayState.ERROR
             }
         }
 

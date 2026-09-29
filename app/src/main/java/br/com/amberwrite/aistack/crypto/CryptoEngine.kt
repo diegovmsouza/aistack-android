@@ -21,8 +21,15 @@ object CryptoEngine {
     fun b64uEncode(bytes: ByteArray): String =
         Base64.encodeToString(bytes, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
 
-    fun b64uDecode(s: String): ByteArray =
-        Base64.decode(s, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+    fun b64uDecode(s: String): ByteArray {
+        val clean = s.trim().replace('-', '+').replace('_', '/')
+        val pad = when (clean.length % 4) {
+            2 -> "=="
+            3 -> "="
+            else -> ""
+        }
+        return Base64.decode(clean + pad, Base64.DEFAULT)
+    }
 
     fun sha256Hex(data: ByteArray): String {
         val md = MessageDigest.getInstance("SHA-256")
