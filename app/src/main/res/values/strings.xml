@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">AiStack</string>
+    <string name="pair_title">Parear com AiStack</string>
+    <string name="scan_qr_code">Escanear QR Code</string>
+    <string name="paste_pair_link">Ou cole o link de pareamento</string>
+    <string name="connecting">Conectando ao host…</string>
+    <string name="connected">Conectado</string>
+    <string name="disconnected">Desconectado</string>
+    <string name="send">Enviar</string>
+    <string name="prompt_placeholder">Pergunte ou comande o AiStack…</string>
+    <string name="thinking">Pensando…</string>
+    <string name="allow">Permitir</string>
+    <string name="deny">Negar</string>
+    <string name="always_allow">Sempre permitir</string>
+    <string name="task_channel_name">Tarefas de IA AiStack</string>
+    <string name="task_channel_desc">Notificações em tempo real sobre execuções e pedidos de permissão da IA</string>
+</resources>

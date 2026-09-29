@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="1.3"
+        android:scaleY="1.3"
+        android:pivotX="54"
+        android:pivotY="54">
+        <!-- Quadrado 1: Âmbar/Terracota Claude -->
+        <path
+            android:fillColor="#D97757"
+            android:pathData="M34,34 h18 v18 h-18 z" />
+        <!-- Quadrado 2: Azul Gemini/Agy -->
+        <path
+            android:fillColor="#38BDF8"
+            android:pathData="M56,34 h18 v18 h-18 z" />
+        <!-- Quadrado 3: Grafite/Branco Codex -->
+        <path
+            android:fillColor="#F3F4F6"
+            android:pathData="M45,56 h18 v18 h-18 z" />
+    </group>
+</vector>
