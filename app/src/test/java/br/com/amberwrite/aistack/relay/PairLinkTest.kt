@@ -51,4 +51,16 @@ class PairLinkTest {
         assertNull(PairLink.parse(""))
         assertNull(PairLink.parse("   "))
     }
+
+    @Test
+    fun fingerprint_mostraOs32PrimeirosHexEmGruposDeQuatro() {
+        val host = "0123456789ABCDEF0123456789abcdef" + "f".repeat(32)
+        val link = PairLink("wss://relay.exemplo.com/x", host, "pk", "1")
+        assertEquals("0123 4567 89ab cdef 0123 4567 89ab cdef", link.fingerprint())
+    }
+
+    @Test
+    fun relayHost_tiraEsquemaECaminho() {
+        assertEquals("relay.exemplo.com", PairLink("wss://relay.exemplo.com/x", "h", "pk", null).relayHost())
+    }
 }

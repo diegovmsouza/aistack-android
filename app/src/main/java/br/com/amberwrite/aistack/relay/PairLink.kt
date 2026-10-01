@@ -9,6 +9,16 @@ data class PairLink(
     val pk: String,     // chave pública X25519 estática do host (base64url)
     val code: String?   // código de pareamento de uso único (10 min)
 ) {
+    /** Impressão digital curta do host para o usuário conferir com a tela do computador (32 hex, grupos de 4). */
+    fun fingerprint(): String = host.lowercase().take(32).chunked(4).joinToString(" ")
+
+    /** Servidor do relay sem esquema nem caminho, para mostrar na confirmação. */
+    fun relayHost(): String = try {
+        java.net.URI(relay).host ?: relay
+    } catch (e: Exception) {
+        relay
+    }
+
     companion object {
         fun parse(rawText: String): PairLink? {
             val text = rawText.trim()

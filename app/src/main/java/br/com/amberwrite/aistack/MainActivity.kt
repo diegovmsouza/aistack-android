@@ -8,7 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -44,6 +47,8 @@ class MainActivity : ComponentActivity() {
 
     private var activeRelayClient by mutableStateOf<RelayClient?>(null)
     private var isScannerOpen by mutableStateOf(false)
+    /** Link recebido (deep link, QR ou colado) aguardando a confirmação do usuário (N-03). */
+    private var pendingLink by mutableStateOf<PairLink?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,18 +57,27 @@ class MainActivity : ComponentActivity() {
         val deepLink = intent?.data?.toString()
         val initialPairLink = if (deepLink != null) PairLink.parse(deepLink) else null
 
-        if (initialPairLink != null) {
-            connectWithLink(initialPairLink)
-        } else {
-            val savedLink = AiStackConnectionManager.getSavedPairLink(this)
-            if (savedLink != null) {
-                activeRelayClient = AiStackConnectionManager.connectWith(this, savedLink)
-            }
+        // Um link que chega de fora (navegador, mensagem) NUNCA troca o computador pareado sozinho.
+        pendingLink = initialPairLink
+        val savedLink = AiStackConnectionManager.getSavedPairLink(this)
+        if (savedLink != null) {
+            activeRelayClient = AiStackConnectionManager.connectWith(this, savedLink)
         }
 
         setContent {
             AiStackTheme {
                 MainContent()
+                pendingLink?.let { link ->
+                    PairConfirmDialog(
+                        link = link,
+                        replacing = AiStackConnectionManager.getSavedPairLink(this) != null,
+                        onConfirm = {
+                            pendingLink = null
+                            connectWithLink(link)
+                        },
+                        onDismiss = { pendingLink = null }
+                    )
+                }
             }
         }
     }
@@ -75,8 +89,7 @@ class MainActivity : ComponentActivity() {
         if (deepLink != null) {
             val link = PairLink.parse(deepLink)
             if (link != null) {
-                Toast.makeText(this, "Pareamento recebido via link!", Toast.LENGTH_SHORT).show()
-                connectWithLink(link)
+                pendingLink = link
             }
         }
     }
@@ -87,6 +100,25 @@ class MainActivity : ComponentActivity() {
         if (client != null && client.state.value != RelayState.ONLINE && client.state.value != RelayState.CONNECTING) {
             client.connect()
         }
+    }
+
+    @Composable
+    private fun PairConfirmDialog(link: PairLink, replacing: Boolean, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Parear com este computador?") },
+            text = {
+                Text(
+                    "Relay: ${link.relayHost()}\n" +
+                        "Impressão digital do computador:\n${link.fingerprint()}\n\n" +
+                        "Confira que ela é a mesma mostrada no AiStack do seu computador. " +
+                        (if (replacing) "O computador atualmente pareado será substituído. " else "") +
+                        "Se você não pediu este pareamento, toque em Cancelar."
+                )
+            },
+            confirmButton = { TextButton(onClick = onConfirm) { Text("Parear") } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+        )
     }
 
     private fun connectWithLink(link: PairLink) {
@@ -282,7 +314,8 @@ class MainActivity : ComponentActivity() {
         if (isScannerOpen) {
             QrScannerScreen(
                 onPairFound = { link ->
-                    connectWithLink(link)
+                    isScannerOpen = false
+                    pendingLink = link
                 },
                 onBack = { isScannerOpen = false }
             )
@@ -291,7 +324,7 @@ class MainActivity : ComponentActivity() {
                 relayState = relayState,
                 errorMessage = lastError,
                 onOpenScanner = { isScannerOpen = true },
-                onPairWithLink = { link -> connectWithLink(link) }
+                onPairWithLink = { link -> pendingLink = link }
             )
         } else {
             ModalNavigationDrawer(
