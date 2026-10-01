@@ -109,4 +109,28 @@ class CryptoEngineTest {
         val invalidHost = CryptoEngine.verifyHostAuth("wrong_host_id", hostPub, sig, transcript)
         assertFalse(invalidHost)
     }
+
+    @Test
+    fun testVetorFixoDoSigiloFuturoConfereComONucleo() {
+        // Vetor do relay/PROTOCOL.md (§Sigilo futuro), gerado pelo núcleo em Rust e conferido em Node.
+        val staticPriv = ByteArray(32) { 0x22 }
+        val ephPriv = ByteArray(32) { 0x33 }
+        val hostPub = java.util.Base64.getUrlDecoder().decode("e06Qm75__kTEZaIgA31gjuNYl9Me-XLwf3SJLLD3PxM")
+        val ikm = CryptoEngine.deriveSessionSecret(staticPriv, ephPriv, hostPub)
+        assertEquals(64, ikm.size)
+        val (sendKey, recvKey) = CryptoEngine.deriveTunnelKeys(ikm)
+        val session = TunnelSession(sendKey, recvKey)
+        val frame = "00000000000000000000000000000000000000009c3317863c39500429ee10856cd706990a19262c96f94ab32d264be226b3f0e1154afbc83ec5f850f7c478"
+            .chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        assertEquals("""{"t":"close","reason":"ok"}""", session.open(frame))
+    }
+
+    @Test
+    fun testParEfemeroTemTamanhoEhNovoACadaChamada() {
+        val (priv1, pub1) = CryptoEngine.generateEphemeralKeyPair()
+        val (_, pub2) = CryptoEngine.generateEphemeralKeyPair()
+        assertEquals(32, priv1.size)
+        assertEquals(32, pub1.size)
+        assertFalse(pub1.contentEquals(pub2))
+    }
 }

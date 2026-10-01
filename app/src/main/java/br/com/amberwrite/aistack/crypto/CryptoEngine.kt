@@ -51,6 +51,21 @@ object CryptoEngine {
     }
 
     /**
+     * Par X25519 efêmero de UMA conexão (R-173): (privada, pública). Nunca persistido.
+     */
+    fun generateEphemeralKeyPair(): Pair<ByteArray, ByteArray> {
+        val priv = X25519PrivateKeyParameters(java.security.SecureRandom())
+        return Pair(priv.encoded, priv.generatePublicKey().encoded)
+    }
+
+    /**
+     * Material de entrada do HKDF com sigilo futuro: DH(estática, host) ‖ DH(efêmera, host), 64 bytes,
+     * na mesma ordem do host (PROTOCOL.md §Derivação).
+     */
+    fun deriveSessionSecret(staticPriv: ByteArray, ephemeralPriv: ByteArray, hostPub: ByteArray): ByteArray =
+        computeSharedSecret(staticPriv, hostPub) + computeSharedSecret(ephemeralPriv, hostPub)
+
+    /**
      * Deriva chaves AES-256 (32 bytes) para o cliente via HKDF-SHA256:
      * - "aistack-tunnel-v1 c2h" -> sendKey (cliente envia para host)
      * - "aistack-tunnel-v1 h2c" -> recvKey (cliente recebe do host)

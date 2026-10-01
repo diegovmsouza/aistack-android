@@ -76,6 +76,8 @@ class RelayClient(
     private var handshakeStep = 0
     private var keyAuthRpcId: Long? = null
     private var clientHelloBytes: ByteArray? = null
+    /** Privada X25519 efêmera da conexão atual; some quando o handshake deriva as chaves. */
+    private var ephemeralPriv: ByteArray? = null
     private var hostHelloBytes: ByteArray? = null
 
     fun connect() {
@@ -106,11 +108,15 @@ class RelayClient(
             _state.value = RelayState.HANDSHAKING
             handshakeStep = 1
 
-            // 1. Enviar Hello em claro com a chave X25519 persistente do aparelho
+            // 1. Enviar Hello em claro com a chave X25519 persistente do aparelho e uma efêmera nova
+            // desta conexão (R-173): roubar a persistente depois não decifra o tráfego gravado.
+            val (ephPriv, ephPub) = CryptoEngine.generateEphemeralKeyPair()
+            ephemeralPriv = ephPriv
             val hello = RelayProtocol.HelloMessage(
                 t = "hello",
                 k = identity.publicKeyB64Url(),
-                aead = "a"
+                aead = "a",
+                e = CryptoEngine.b64uEncode(ephPub)
             )
             val helloJson = RelayProtocol.toJson(hello)
             val bytes = helloJson.toByteArray(Charsets.UTF_8)
@@ -175,7 +181,9 @@ class RelayClient(
 
                 // Derivar chaves X25519 -> HKDF
                 val hostPubBytes = CryptoEngine.b64uDecode(hostHello.k)
-                val sharedSecret = CryptoEngine.computeSharedSecret(identity.privateKeyBytes, hostPubBytes)
+                val ephPriv = ephemeralPriv ?: throw IllegalStateException("Chave efêmera ausente")
+                val sharedSecret = CryptoEngine.deriveSessionSecret(identity.privateKeyBytes, ephPriv, hostPubBytes)
+                ephemeralPriv = null
                 val (sendKey, recvKey) = CryptoEngine.deriveTunnelKeys(sharedSecret)
 
                 tunnelSession = TunnelSession(sendKey, recvKey)

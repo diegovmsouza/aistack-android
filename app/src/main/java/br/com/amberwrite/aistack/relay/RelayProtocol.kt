@@ -14,7 +14,8 @@ object RelayProtocol {
     data class HelloMessage(
         val t: String = "hello",
         val k: String,          // pública X25519 (base64url)
-        val aead: String? = "a" // Perfil AES-GCM
+        val aead: String? = "a", // Perfil AES-GCM
+        val e: String? = null    // X25519 efêmera desta conexão (só no hello do aparelho; sigilo futuro)
     )
 
     data class HostAuthMessage(
