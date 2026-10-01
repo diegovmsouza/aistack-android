@@ -405,9 +405,9 @@ class MainActivity : ComponentActivity() {
                         activeConvId?.let { cid ->
                             scope.launch {
                                 try {
-                                    client?.call("interruptConversation", mapOf("id" to cid))
+                                    client?.call("interrupt", mapOf("id" to cid))
                                 } catch (e: Exception) {
-                                    // ignorar
+                                    Toast.makeText(this@MainActivity, "Não foi possível interromper: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
