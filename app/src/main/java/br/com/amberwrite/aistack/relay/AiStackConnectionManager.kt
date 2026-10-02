@@ -65,9 +65,16 @@ object AiStackConnectionManager {
         _currentClient.value = null
     }
 
-    fun answerPermission(conversationId: String, requestId: String, allow: Boolean) {
-        val client = activeClient ?: return
+    /** `onResult(true)` só depois de o host confirmar o RPC; o chamador descarta o pedido nesse caso. */
+    fun answerPermission(conversationId: String, requestId: String, allow: Boolean, onResult: (Boolean) -> Unit = {}) {
+        val client = activeClient
+        if (client == null || conversationId.isBlank() || requestId.isBlank()) {
+            Log.w(TAG, "Resposta de permissão sem cliente ou sem ids: não enviada")
+            onResult(false)
+            return
+        }
         scope.launch {
+            var ok = false
             try {
                 val decision = mapOf(
                     "behavior" to if (allow) "allow" else "deny"
@@ -78,10 +85,12 @@ object AiStackConnectionManager {
                     "decision" to decision
                 )
                 client.call("answerPermission", params)
+                ok = true
                 Log.i(TAG, "Permissão respondida com sucesso: $requestId -> allow=$allow")
             } catch (e: Exception) {
                 Log.e(TAG, "Erro ao responder permissão: ${e.message}", e)
             }
+            onResult(ok)
         }
     }
 }

@@ -24,9 +24,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import br.com.amberwrite.aistack.model.AccountParser
 import br.com.amberwrite.aistack.model.AccountStatus
+import br.com.amberwrite.aistack.model.ChatEffect
 import br.com.amberwrite.aistack.model.ChatBlock
 import br.com.amberwrite.aistack.model.ChatMessage
+import br.com.amberwrite.aistack.model.ChatReducer
 import br.com.amberwrite.aistack.model.ConversationItem
 import br.com.amberwrite.aistack.model.Provider
 import br.com.amberwrite.aistack.relay.AiStackConnectionManager
@@ -127,6 +130,16 @@ class MainActivity : ComponentActivity() {
         isScannerOpen = false
     }
 
+    private suspend fun refreshAccounts(client: RelayClient?, accounts: MutableList<AccountStatus>) {
+        try {
+            val parsed = AccountParser.parse(client?.call("listAccounts")?.takeIf { it.isJsonArray }?.asJsonArray)
+            accounts.clear()
+            accounts.addAll(parsed)
+        } catch (e: Exception) {
+            Log.w("MainActivity", "listAccounts falhou: ${e.message}")
+        }
+    }
+
     @Composable
     private fun MainContent() {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -144,91 +157,44 @@ class MainActivity : ComponentActivity() {
         var currentProvider by remember { mutableStateOf(Provider.CLAUDE) }
         var currentEffort by remember { mutableStateOf("high") }
         var isStreaming by remember { mutableStateOf(false) }
+        // Conversa dona do turno em curso (e do serviço em primeiro plano), mesmo que a tela mostre outra.
+        var streamingConvId by remember { mutableStateOf<String?>(null) }
 
-        // Escuta eventos ao vivo do Host
+        // Escuta eventos ao vivo do Host. Os eventos de TODAS as conversas chegam aqui: só os da
+        // conversa aberta mexem no chat; o pedido de permissão de qualquer uma vira notificação.
         LaunchedEffect(client) {
             client?.events?.collect { event ->
                 when (event.event) {
+                    "accounts-update", "usage-update" -> refreshAccounts(client, accounts)
                     "conv-event" -> {
-                        event.payload?.asJsonObject?.let { p ->
-                            val convId = p.get("conversationId")?.asString
-                            val inner = p.get("event")?.asJsonObject ?: return@let
-                            val type = inner.get("type")?.asString
-
-                            when (type) {
-                                "TextDelta" -> {
-                                    val text = inner.get("text")?.asString ?: ""
-                                    val lastMsg = messages.lastOrNull()
-                                    if (lastMsg != null && lastMsg.role == "assistant") {
-                                        val lastBlock = lastMsg.blocks.lastOrNull()
-                                        if (lastBlock is ChatBlock.Text) {
-                                            val updated = lastBlock.copy(text = lastBlock.text + text, isStreaming = true)
-                                            val updatedBlocks = lastMsg.blocks.toMutableList().also { it[it.size - 1] = updated }
-                                            messages[messages.size - 1] = lastMsg.copy(blocks = updatedBlocks)
-                                        } else {
-                                            val newBlock = ChatBlock.Text(id = System.currentTimeMillis().toString(), text = text, isStreaming = true)
-                                            messages[messages.size - 1] = lastMsg.copy(blocks = lastMsg.blocks + newBlock)
-                                        }
-                                    } else {
-                                        val newBlock = ChatBlock.Text(id = System.currentTimeMillis().toString(), text = text, isStreaming = true)
-                                        messages.add(ChatMessage(id = System.currentTimeMillis().toString(), role = "assistant", blocks = listOf(newBlock)))
-                                    }
+                        val p = event.payload?.takeIf { it.isJsonObject }?.asJsonObject ?: return@collect
+                        val convId = p.get("conversationId")?.asString
+                        val inner = p.get("event")?.takeIf { it.isJsonObject }?.asJsonObject ?: return@collect
+                        val mine = convId != null && convId == activeConvId
+                        // Fora da conversa aberta aplica-se o evento a uma lista descartável: só o efeito importa.
+                        val effect = ChatReducer.apply(if (mine) messages else mutableListOf(), inner) {
+                            java.util.UUID.randomUUID().toString()
+                        }
+                        when (effect) {
+                            is ChatEffect.PermissionAsked -> TaskNotificationManager.showPermissionNotification(
+                                this@MainActivity, effect.requestId, convId ?: "", effect.tool, effect.input
+                            )
+                            is ChatEffect.PermissionCancelled ->
+                                TaskNotificationManager.dismissPermissionNotification(this@MainActivity, effect.requestId)
+                            is ChatEffect.TurnEnded -> {
+                                if (convId != null && convId == streamingConvId) {
+                                    streamingConvId = null
+                                    stopService(Intent(this@MainActivity, AiStackTaskService::class.java))
                                 }
-                                "ThinkingDelta" -> {
-                                    val text = inner.get("text")?.asString ?: ""
-                                    val lastMsg = messages.lastOrNull()
-                                    if (lastMsg != null && lastMsg.role == "assistant") {
-                                        val lastBlock = lastMsg.blocks.lastOrNull()
-                                        if (lastBlock is ChatBlock.Thinking) {
-                                            val updated = lastBlock.copy(text = lastBlock.text + text, isStreaming = true)
-                                            val updatedBlocks = lastMsg.blocks.toMutableList().also { it[it.size - 1] = updated }
-                                            messages[messages.size - 1] = lastMsg.copy(blocks = updatedBlocks)
-                                        } else {
-                                            val newBlock = ChatBlock.Thinking(id = System.currentTimeMillis().toString(), text = text, isStreaming = true)
-                                            messages[messages.size - 1] = lastMsg.copy(blocks = lastMsg.blocks + newBlock)
-                                        }
-                                    }
-                                }
-                                "ToolStart" -> {
-                                    val id = inner.get("id")?.asString ?: ""
+                                if (mine) isStreaming = false
+                            }
+                            ChatEffect.None -> {
+                                if (mine && inner.get("type")?.asString == "ToolStart") {
                                     val name = inner.get("name")?.asString ?: "ferramenta"
-                                    val input = inner.get("input")?.toString() ?: ""
-                                    val toolBlock = ChatBlock.ToolCall(id = id, toolName = name, input = input, isRunning = true)
-                                    val lastMsg = messages.lastOrNull()
-                                    if (lastMsg != null && lastMsg.role == "assistant") {
-                                        messages[messages.size - 1] = lastMsg.copy(blocks = lastMsg.blocks + toolBlock)
-                                    }
-
-                                    // Atualiza Foreground Service
-                                    val sIntent = Intent(this@MainActivity, AiStackTaskService::class.java).apply {
+                                    startService(Intent(this@MainActivity, AiStackTaskService::class.java).apply {
                                         action = AiStackTaskService.ACTION_UPDATE
                                         putExtra(AiStackTaskService.EXTRA_DESCRIPTION, "Executando $name...")
-                                    }
-                                    startService(sIntent)
-                                }
-                                "PermissionRequest" -> {
-                                    val reqId = inner.get("id")?.asString ?: ""
-                                    val tool = inner.get("tool")?.asString ?: "Comando"
-                                    val input = inner.get("input")?.toString() ?: ""
-                                    val permBlock = ChatBlock.Permission(requestId = reqId, toolName = tool, commandOrFile = input)
-                                    val lastMsg = messages.lastOrNull()
-                                    if (lastMsg != null && lastMsg.role == "assistant") {
-                                        messages[messages.size - 1] = lastMsg.copy(blocks = lastMsg.blocks + permBlock)
-                                    }
-
-                                    // Dispara notificação Heads-up interativa
-                                    TaskNotificationManager.showPermissionNotification(
-                                        this@MainActivity,
-                                        reqId,
-                                        convId ?: activeConvId ?: "",
-                                        tool,
-                                        input
-                                    )
-                                }
-                                "TurnComplete" -> {
-                                    isStreaming = false
-                                    // Para o serviço de background
-                                    stopService(Intent(this@MainActivity, AiStackTaskService::class.java))
+                                    })
                                 }
                             }
                         }
@@ -242,6 +208,7 @@ class MainActivity : ComponentActivity() {
             if (relayState == RelayState.ONLINE) {
                 scope.launch {
                     try {
+                        refreshAccounts(client, accounts)
                         val result = client?.call("listConversations")
                         conversations.clear()
                         result?.asJsonArray?.forEach { elem ->
@@ -337,6 +304,7 @@ class MainActivity : ComponentActivity() {
                         onSelectConversation = { id ->
                             activeConvId = id
                             messages.clear()
+                            isStreaming = id == streamingConvId
                             val selectedConv = conversations.find { it.id == id }
                             if (selectedConv != null) {
                                 currentProvider = selectedConv.provider
@@ -370,8 +338,20 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         onNewConversation = {
+                            // O turno em curso não fica órfão: pede ao host para interrompê-lo.
+                            val running = streamingConvId
+                            if (running != null) {
+                                scope.launch {
+                                    try {
+                                        client?.call("interrupt", mapOf("id" to running))
+                                    } catch (e: Exception) {
+                                        Log.w("MainActivity", "interrupt ao abrir conversa nova: ${e.message}")
+                                    }
+                                }
+                            }
                             activeConvId = null
                             messages.clear()
+                            isStreaming = false
                             scope.launch { drawerState.close() }
                         },
                         onDisconnectHost = {
@@ -398,11 +378,12 @@ class MainActivity : ComponentActivity() {
                         )
                         messages.add(userMsg)
                         isStreaming = true
+                        streamingConvId = activeConvId
 
                         // Inicia Foreground Service de acompanhamento
                         val sIntent = Intent(this@MainActivity, AiStackTaskService::class.java).apply {
                             action = AiStackTaskService.ACTION_START
-                            putExtra(AiStackTaskService.EXTRA_DESCRIPTION, "Executando $text...")
+                            putExtra(AiStackTaskService.EXTRA_DESCRIPTION, "Turno da IA em andamento")
                         }
                         startService(sIntent)
 
@@ -418,6 +399,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                     val newConv = client?.call("createConversation", createParams)?.asJsonObject
                                     activeConvId = newConv?.get("id")?.asString
+                                    streamingConvId = activeConvId
                                 }
 
                                 activeConvId?.let { cid ->
@@ -429,6 +411,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             } catch (e: Exception) {
                                 isStreaming = false
+                                streamingConvId = null
                                 stopService(Intent(this@MainActivity, AiStackTaskService::class.java))
                                 Toast.makeText(this@MainActivity, "Erro ao enviar: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
@@ -450,8 +433,20 @@ class MainActivity : ComponentActivity() {
                         currentEffort = eff
                     },
                     onPermissionDecision = { reqId, dec ->
-                        AiStackConnectionManager.answerPermission(activeConvId ?: "", reqId, dec == "allow")
-                        TaskNotificationManager.dismissPermissionNotification(this@MainActivity, reqId)
+                        val cid = activeConvId
+                        if (cid == null) {
+                            Toast.makeText(this@MainActivity, "Nenhuma conversa aberta para responder.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            AiStackConnectionManager.answerPermission(cid, reqId, dec == "allow") { ok ->
+                                // Só marca e descarta depois que o host confirmou: falha deixa o cartão para nova tentativa.
+                                if (ok) {
+                                    ChatReducer.markPermission(messages, reqId, dec)
+                                    TaskNotificationManager.dismissPermissionNotification(this@MainActivity, reqId)
+                                } else {
+                                    Toast.makeText(this@MainActivity, "O host não recebeu a resposta. Tente de novo.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
                     }
                 )
             }

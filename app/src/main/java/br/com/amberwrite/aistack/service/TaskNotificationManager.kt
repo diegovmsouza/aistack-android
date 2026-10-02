@@ -40,6 +40,7 @@ object TaskNotificationManager {
             .setContentText(taskDescription)
             .setProgress(0, 0, true) // Indeterminado
             .setContentIntent(pendingOpen)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
@@ -93,7 +94,7 @@ object TaskNotificationManager {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notifId = PERMISSION_NOTIFICATION_BASE_ID + (requestId.hashCode() % 1000)
+        val notifId = PERMISSION_NOTIFICATION_BASE_ID + (Math.floorMod(requestId.hashCode(), 1000))
 
         val notification = NotificationCompat.Builder(context, AiStackApplication.PERMISSION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -102,6 +103,15 @@ object TaskNotificationManager {
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .bigText("A IA deseja executar uma ação no seu computador:\n\n• Ferramenta: $toolName\n• Alvo: $commandOrFile\n\nDeseja autorizar agora?")
+            )
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            // Na tela de bloqueio aparece só o aviso genérico: o comando pode conter caminhos e segredos.
+            .setPublicVersion(
+                NotificationCompat.Builder(context, AiStackApplication.PERMISSION_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle("AiStack — Permissão necessária")
+                    .setContentText("Desbloqueie o aparelho para ver o pedido.")
+                    .build()
             )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
@@ -116,7 +126,7 @@ object TaskNotificationManager {
 
     fun dismissPermissionNotification(context: Context, requestId: String) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notifId = PERMISSION_NOTIFICATION_BASE_ID + (requestId.hashCode() % 1000)
+        val notifId = PERMISSION_NOTIFICATION_BASE_ID + (Math.floorMod(requestId.hashCode(), 1000))
         manager.cancel(notifId)
     }
 }

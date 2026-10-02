@@ -172,8 +172,11 @@ fun DrawerContent(
 
             accounts.take(3).forEach { acc ->
                 val firstWindow = acc.windows.firstOrNull()
-                val pct = firstWindow?.usedPct ?: 0.0
+                // Sem medição do host não há percentual: mostra "—", nunca 0%.
+                val measured = firstWindow?.usedPct
+                val pct = measured ?: 0.0
                 val statusColor = when {
+                    measured == null -> AiStackFg3
                     pct >= 95.0 -> StatusDanger
                     pct >= 80.0 -> StatusWarn
                     else -> StatusOk
@@ -192,7 +195,7 @@ fun DrawerContent(
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            text = "${pct.toInt()}%",
+                            text = if (measured == null) "—" else "${pct.toInt()}%",
                             color = statusColor,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold

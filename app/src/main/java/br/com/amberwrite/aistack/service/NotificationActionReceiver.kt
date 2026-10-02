@@ -23,15 +23,17 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
         Log.i(TAG, "Ação de notificação recebida: $action para request=$requestId")
 
-        when (action) {
-            ACTION_ALLOW -> {
-                AiStackConnectionManager.answerPermission(convId, requestId, true)
-                TaskNotificationManager.dismissPermissionNotification(context, requestId)
-            }
-            ACTION_DENY -> {
-                AiStackConnectionManager.answerPermission(convId, requestId, false)
-                TaskNotificationManager.dismissPermissionNotification(context, requestId)
-            }
+        val allow = when (action) {
+            ACTION_ALLOW -> true
+            ACTION_DENY -> false
+            else -> return
+        }
+        // O receiver morre ao retornar de onReceive: goAsync segura o processo até o host responder.
+        // A notificação só some se o host confirmou; senão continua lá para nova tentativa.
+        val pending = goAsync()
+        AiStackConnectionManager.answerPermission(convId, requestId, allow) { ok ->
+            if (ok) TaskNotificationManager.dismissPermissionNotification(context, requestId)
+            pending.finish()
         }
     }
 }

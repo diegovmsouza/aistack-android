@@ -49,6 +49,13 @@ class AiStackTaskService : Service() {
         return START_NOT_STICKY
     }
 
+    /** Android 15 limita o tempo do serviço `dataSync`: ao estourar, encerra com a notificação removida. */
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        stopTimer()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
     private fun startForegroundService() {
         val notification = TaskNotificationManager.createOngoingTaskNotification(
             this,
