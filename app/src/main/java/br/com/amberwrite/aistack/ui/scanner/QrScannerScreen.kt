@@ -40,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -93,12 +94,7 @@ fun QrScannerScreen(
     Box(modifier = Modifier.fillMaxSize().background(AiStackBg)) {
         if (hasCameraPermission) {
             CameraPreviewWithScanner(
-                onQrScanned = { raw ->
-                    val pairLink = PairLink.parse(raw)
-                    if (pairLink != null) {
-                        onPairFound(pairLink)
-                    }
-                }
+                onQrScanned = onPairFound
             )
 
             // Retículo e linha animada do scanner
@@ -199,12 +195,13 @@ private fun ScannerReticle() {
 
 @Composable
 private fun CameraPreviewWithScanner(
-    onQrScanned: (String) -> Unit
+    onQrScanned: (PairLink) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
     var scanned by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) { onDispose { cameraExecutor.shutdown() } }
 
     AndroidView(
         factory = { ctx ->
@@ -231,9 +228,11 @@ private fun CameraPreviewWithScanner(
 
                 imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
                     processImageProxy(barcodeScanner, imageProxy) { barcodeValue ->
-                        if (!scanned && barcodeValue != null) {
+                        // Só um QR que o PairLink aceita encerra a leitura; qualquer outro é ignorado.
+                        val link = barcodeValue?.let { PairLink.parse(it) }
+                        if (!scanned && link != null) {
                             scanned = true
-                            onQrScanned(barcodeValue)
+                            onQrScanned(link)
                         }
                     }
                 }

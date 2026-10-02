@@ -253,7 +253,7 @@ class MainActivity : ComponentActivity() {
                                     val bObj = blockElem.asJsonObject
                                     val kind = bObj.get("kind")?.asString ?: "text"
                                     val content = bObj.get("content")?.asJsonObject
-                                    val blockId = bObj.get("id")?.asString ?: System.currentTimeMillis().toString()
+                                    val blockId = bObj.get("id")?.asString ?: java.util.UUID.randomUUID().toString()
                                     when (kind) {
                                         "user" -> {
                                             val txt = content?.get("text")?.asString ?: ""
@@ -317,7 +317,7 @@ class MainActivity : ComponentActivity() {
                                         val bObj = blockElem.asJsonObject
                                         val kind = bObj.get("kind")?.asString ?: "text"
                                         val content = bObj.get("content")?.asJsonObject
-                                        val blockId = bObj.get("id")?.asString ?: System.currentTimeMillis().toString()
+                                        val blockId = bObj.get("id")?.asString ?: java.util.UUID.randomUUID().toString()
                                         when (kind) {
                                             "user" -> {
                                                 val txt = content?.get("text")?.asString ?: ""
@@ -372,9 +372,9 @@ class MainActivity : ComponentActivity() {
                     onOpenDrawer = { scope.launch { drawerState.open() } },
                     onSendMessage = { text ->
                         val userMsg = ChatMessage(
-                            id = System.currentTimeMillis().toString(),
+                            id = java.util.UUID.randomUUID().toString(),
                             role = "user",
-                            blocks = listOf(ChatBlock.Text(id = System.currentTimeMillis().toString(), text = text))
+                            blocks = listOf(ChatBlock.Text(id = java.util.UUID.randomUUID().toString(), text = text))
                         )
                         messages.add(userMsg)
                         isStreaming = true

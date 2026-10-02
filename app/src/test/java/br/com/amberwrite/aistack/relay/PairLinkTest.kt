@@ -63,4 +63,10 @@ class PairLinkTest {
     fun relayHost_tiraEsquemaECaminho() {
         assertEquals("relay.exemplo.com", PairLink("wss://relay.exemplo.com/x", "h", "pk", null).relayHost())
     }
+
+    @Test
+    fun relaySemTlsERecusado() {
+        assertNull(PairLink.parse("aistack://pair?relay=ws://relay.exemplo.com&host=abc&pk=pk&code=1"))
+        assertNull(PairLink.parse("aistack://pair?relay=http://relay.exemplo.com&host=abc&pk=pk&code=1"))
+    }
 }

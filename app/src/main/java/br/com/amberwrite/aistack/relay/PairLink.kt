@@ -6,7 +6,9 @@ import java.nio.charset.StandardCharsets
 data class PairLink(
     val relay: String,  // ex: wss://aistack.amberwrite.com.br
     val host: String,   // host_id (hex de 64 chars do sha256 da pública Ed25519)
-    val pk: String,     // chave pública X25519 estática do host (base64url)
+    // Chave X25519 estática do host (base64url). Informativa: o túnel usa chaves efêmeras e a
+    // identidade do host é fixada por `host` (sha256 da Ed25519, conferida no hostAuth).
+    val pk: String,
     val code: String?   // código de pareamento de uso único (10 min)
 ) {
     /** Impressão digital curta do host para o usuário conferir com a tela do computador (32 hex, grupos de 4). */
@@ -29,6 +31,8 @@ data class PairLink(
                     val queryString = text.substring(questionIdx + 1)
                     val params = parseQueryParams(queryString)
                     val relay = params["relay"] ?: return null
+                    // Só TLS: um relay em ws:// deixaria o túnel (e o pareamento) sem proteção de transporte.
+                    if (!relay.startsWith("wss://", ignoreCase = true)) return null
                     val host = params["host"] ?: return null
                     val pk = params["pk"] ?: return null
                     val code = params["code"]

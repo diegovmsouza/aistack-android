@@ -63,8 +63,8 @@ class RelayClient(
     private val _lastError = MutableStateFlow<String?>(null)
     val lastError: StateFlow<String?> = _lastError.asStateFlow()
 
-    private var webSocket: WebSocket? = null
-    private var tunnelSession: TunnelSession? = null
+    @Volatile private var webSocket: WebSocket? = null
+    @Volatile private var tunnelSession: TunnelSession? = null
     private val nextRpcId = AtomicLong(1)
     private val pendingRpcs = ConcurrentHashMap<Long, CompletableDeferred<JsonElement>>()
 
@@ -74,18 +74,18 @@ class RelayClient(
         .readTimeout(0, TimeUnit.MILLISECONDS) // Sem timeout de leitura para WS persistente
         .build()
 
-    private var isPairing = link.code != null
-    private var isManuallyClosed = false
-    private var reconnectJob: Job? = null
-    private var reconnectAttempt = 0
+    @Volatile private var isPairing = link.code != null
+    @Volatile private var isManuallyClosed = false
+    @Volatile private var reconnectJob: Job? = null
+    @Volatile private var reconnectAttempt = 0
 
     // Estado temporário do handshake
-    private var handshakeStep = 0
-    private var keyAuthRpcId: Long? = null
-    private var clientHelloBytes: ByteArray? = null
+    @Volatile private var handshakeStep = 0
+    @Volatile private var keyAuthRpcId: Long? = null
+    @Volatile private var clientHelloBytes: ByteArray? = null
     /** Privada X25519 efêmera da conexão atual; some quando o handshake deriva as chaves. */
-    private var ephemeralPriv: ByteArray? = null
-    private var hostHelloBytes: ByteArray? = null
+    @Volatile private var ephemeralPriv: ByteArray? = null
+    @Volatile private var hostHelloBytes: ByteArray? = null
 
     fun connect() {
         isManuallyClosed = false

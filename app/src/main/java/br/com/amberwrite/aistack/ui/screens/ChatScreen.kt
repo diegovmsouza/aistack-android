@@ -238,7 +238,7 @@ fun ChatScreen(
                     }
                 }
 
-                items(messages) { msg ->
+                items(messages, key = { it.id }) { msg ->
                     ChatMessageItem(
                         message = msg,
                         provider = currentProvider,
