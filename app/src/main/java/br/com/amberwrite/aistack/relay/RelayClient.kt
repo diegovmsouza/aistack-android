@@ -11,7 +11,9 @@ import com.google.gson.JsonObject
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -29,6 +32,8 @@ import okio.ByteString
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.min
+import kotlin.random.Random
 
 enum class RelayState {
     DISCONNECTED,
@@ -71,6 +76,8 @@ class RelayClient(
 
     private var isPairing = link.code != null
     private var isManuallyClosed = false
+    private var reconnectJob: Job? = null
+    private var reconnectAttempt = 0
 
     // Estado temporário do handshake
     private var handshakeStep = 0
@@ -95,6 +102,8 @@ class RelayClient(
 
     fun disconnect() {
         isManuallyClosed = true
+        reconnectJob?.cancel()
+        failPendingRpcs("Conexão encerrada")
         _state.value = RelayState.DISCONNECTED
         webSocket?.close(1000, "Desconexão solicitada pelo usuário")
         webSocket = null
@@ -152,6 +161,7 @@ class RelayClient(
 
         override fun onClosed(ws: WebSocket, code: Int, reason: String) {
             Log.i(tag, "WebSocket fechado: $code - $reason")
+            failPendingRpcs("Conexão com o relay fechada")
             _state.value = RelayState.DISCONNECTED
             if (!isManuallyClosed) {
                 scheduleReconnect()
@@ -161,6 +171,7 @@ class RelayClient(
         override fun onFailure(ws: WebSocket, t: Throwable, response: Response?) {
             Log.e(tag, "Falha na conexão do WebSocket: ${t.message}")
             _lastError.value = t.message ?: "Falha de conexão"
+            failPendingRpcs("Falha de conexão com o relay")
             _state.value = RelayState.ERROR
             if (!isManuallyClosed) {
                 scheduleReconnect()
@@ -252,7 +263,7 @@ class RelayClient(
                 if (pairResult.ok) {
                     Log.i(tag, "Aparelho pareado com sucesso no AiStack Host!")
                     isPairing = false
-                    _state.value = RelayState.ONLINE
+                    markOnline()
                     handshakeStep = 5
                 } else {
                     throw SecurityException("Pareamento recusado: ${pairResult.error}")
@@ -284,10 +295,21 @@ class RelayClient(
                             deferred.complete(root.get("result") ?: root)
                         }
                     } else if ((id == 1L || id == keyAuthRpcId) && handshakeStep == 4) {
-                        // Resposta do keyAuth inicial
-                        Log.i(tag, "keyAuth autenticado com sucesso! Túnel ONLINE.")
-                        _state.value = RelayState.ONLINE
-                        handshakeStep = 5
+                        // Resposta do keyAuth inicial: um erro do host é recusa, não conexão (N-20).
+                        val refusal = root.get("error")?.takeUnless { it.isJsonNull }?.asString
+                        if (refusal != null) {
+                            Log.w(tag, "keyAuth recusado pelo host: $refusal")
+                            _lastError.value = "O host recusou este aparelho: $refusal"
+                            _state.value = RelayState.ERROR
+                            // Tentar de novo a cada poucos segundos não muda a resposta: o usuário precisa parear de novo.
+                            isManuallyClosed = true
+                            reconnectJob?.cancel()
+                            webSocket?.close(1000, "keyAuth recusado")
+                        } else {
+                            Log.i(tag, "keyAuth autenticado com sucesso! Túnel ONLINE.")
+                            markOnline()
+                            handshakeStep = 5
+                        }
                     }
                 }
                 "event" -> {
@@ -319,7 +341,7 @@ class RelayClient(
     /**
      * Envia uma chamada RPC pelo túnel cifrado e aguarda o resultado.
      */
-    suspend fun call(method: String, params: Any? = null): JsonElement {
+    suspend fun call(method: String, params: Any? = null, timeoutMs: Long = RPC_TIMEOUT_MS): JsonElement {
         val session = tunnelSession ?: throw IllegalStateException("Túnel não conectado")
         val ws = webSocket ?: throw IllegalStateException("WebSocket não conectado")
 
@@ -332,16 +354,46 @@ class RelayClient(
 
         sendSealed(ws, session, json)
 
-        return deferred.await()
+        return try {
+            withTimeout(timeoutMs) { deferred.await() }
+        } catch (e: TimeoutCancellationException) {
+            pendingRpcs.remove(id)
+            throw RuntimeException("O host não respondeu a $method em ${timeoutMs / 1000} s")
+        }
+    }
+
+    private fun markOnline() {
+        reconnectAttempt = 0
+        _state.value = RelayState.ONLINE
+    }
+
+    /** Chamadas em voo não têm mais quem as responda: falham na hora em vez de esperar para sempre (N-20). */
+    private fun failPendingRpcs(reason: String) {
+        val error = RuntimeException(reason)
+        pendingRpcs.keys.toList().forEach { id -> pendingRpcs.remove(id)?.completeExceptionally(error) }
     }
 
     private fun scheduleReconnect() {
-        scope.launch {
-            delay(3000)
+        if (reconnectJob?.isActive == true) return
+        val wait = reconnectDelayMs(reconnectAttempt++)
+        reconnectJob = scope.launch {
+            delay(wait)
             if (!isManuallyClosed && _state.value != RelayState.ONLINE) {
-                Log.i(tag, "Tentando reconectar...")
+                Log.i(tag, "Tentando reconectar (espera de ${wait} ms)...")
                 connect()
             }
+        }
+    }
+
+    companion object {
+        const val RPC_TIMEOUT_MS = 30_000L
+        private const val RECONNECT_BASE_MS = 3_000L
+        private const val RECONNECT_CAP_MS = 60_000L
+
+        /** Espera antes da tentativa `attempt` (0, 1, 2…): dobra a cada falha até 60 s, com ±20% de jitter. */
+        internal fun reconnectDelayMs(attempt: Int, jitter: Double = Random.nextDouble()): Long {
+            val exp = RECONNECT_BASE_MS shl min(attempt, 5)
+            return (min(exp, RECONNECT_CAP_MS) * (0.8 + 0.4 * jitter)).toLong()
         }
     }
 }
