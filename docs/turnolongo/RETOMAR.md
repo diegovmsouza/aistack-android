@@ -6,9 +6,9 @@ Sobrescreva antes de cada pausa e ao trocar de assunto (até 60 linhas). Regras:
 
 ## Agora
 - Assunto ativo: app Android completo (mesma sessão; spec em `docs/spec/`, plano normativo em `00-plano.md`).
-- Estado em 1 linha: Onda 1 CONCLUÍDA e commitada (Android main até b708046; desktop `feat/mobile-companion` 1e644f8, cargo 115+4 testes e tsc verdes). Onda 2 RODANDO: run `wf_4f857885-b0b` (script `scratchpad/onda2.js`, F1–F5, contrato em `docs/spec/CONTRATO-ONDA2.md`).
+- Estado em 1 linha: Onda 1 CONCLUÍDA e commitada (Android main até b708046; desktop `feat/mobile-companion` 1e644f8, cargo 115+4 testes e tsc verdes). Onda 2: F2 (chat) concluído no `wf_4f857885-b0b`; a máquina reiniciou às 22:57 e F1/F3/F4/F5 foram relançados às 07:2x como `wf_8b4396c2-d3e` (script e tarefas em `docs/turnolongo/onda2/`; contrato em `docs/spec/CONTRATO-ONDA2.md`). Nada da Onda 2 commitado ainda.
 - Próximo passo exato: ao terminar, ler o journal (`.../subagents/workflows/wf_4f857885-b0b/journal.jsonl`), `./gradlew --stop`, conferir `assembleDebug testDebugUnitTest`, commitar por feature e dar push → Onda 3 (emulador, E2E isolado com AISTACK_HOME, capturas claro/escuro, revisão).
-- Se o workflow morrer: `Workflow({scriptPath: "<scratchpad>/onda2.js", resumeFromRunId: "wf_4f857885-b0b"})`.
+- Se o workflow morrer: `Workflow({scriptPath: "docs/turnolongo/onda2/onda2b.js", resumeFromRunId: "wf_8b4396c2-d3e"})`. O scratchpad em /tmp some no reboot: nada importante lá.
 
 ## Pedido do usuário (resumo fiel)
 App Android bonito, com animações, SVG obrigatório para imagens; todos os recursos do AiStack: sessões do desktop (ler/interagir), iniciar sessão no celular (aparece na sidebar do desktop com ícone de celular no topo, controle total no desktop), notificações em tempo real de tarefas e pendências pareadas, sub-agentes, comandos de barra, explorador de arquivos, câmera, microfone. Pareamento atual funciona: preservar. Testar no emulador Pixel_10_Pro_XL (emulator-5554 já ligado). Máx. 5 agentes, effort ≤ high.
