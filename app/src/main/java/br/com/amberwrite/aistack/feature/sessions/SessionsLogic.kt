@@ -89,7 +89,8 @@ fun projectsOf(conversations: List<Conversation>): List<String> =
 
 /**
  * Monta as seções da lista: filtra por [project] (caminho exato) e por [query], ordena da mais
- * recente para a mais antiga e agrupa por data. Seções vazias não aparecem.
+ * recente para a mais antiga e agrupa por data. Seções vazias não aparecem. A prévia ao vivo
+ * ([previews]) tem prioridade sobre a última mensagem gravada no host.
  */
 fun buildSessionSections(
     conversations: List<Conversation>,
@@ -104,7 +105,7 @@ fun buildSessionSections(
     val items = conversations
         .asSequence()
         .filter { project == null || it.projectPath == project }
-        .filter { matchesQuery(it, previews[it.id], query) }
+        .filter { matchesQuery(it, previews[it.id] ?: it.lastMessage, query) }
         .sortedByDescending { it.updatedAt }
         .map { c ->
             val p = pendingById[c.id]
@@ -112,7 +113,7 @@ fun buildSessionSections(
                 conversation = c,
                 status = statusOf(p),
                 pendingCount = p?.permissions?.size ?: 0,
-                preview = previews[c.id]?.let(::cleanPreview)?.takeIf { it.isNotBlank() },
+                preview = (previews[c.id] ?: c.lastMessage)?.let(::cleanPreview)?.takeIf { it.isNotBlank() },
                 projectName = projectNameOf(c.projectPath),
                 fromMobile = c.origin == ConversationOrigin.MOBILE
             )

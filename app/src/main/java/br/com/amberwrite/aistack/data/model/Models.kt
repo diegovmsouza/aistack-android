@@ -60,7 +60,9 @@ data class Conversation(
     val updatedAt: Long,
     val origin: ConversationOrigin,
     val originDevice: OriginDevice?,
-    val warning: String?
+    val warning: String?,
+    /** Prévia da última mensagem gravada no host (`lastMessage`); a do usuário vem com «Você: ». */
+    val lastMessage: String? = null
 ) {
     val displayTitle: String
         get() = title.ifBlank { projectPath.substringAfterLast('/').ifBlank { "Sem título" } }
@@ -89,7 +91,12 @@ data class Conversation(
                 originDevice = dev?.let { d ->
                     d.str("id")?.let { OriginDevice(it, d.str("name") ?: it) }
                 },
-                warning = o.str("warning")
+                warning = o.str("warning"),
+                lastMessage = o.obj("lastMessage")?.let { m ->
+                    m.str("text")?.trim()?.takeIf { it.isNotEmpty() }?.let { t ->
+                        if (m.str("role") == "user") "Você: $t" else t
+                    }
+                }
             )
         }
 

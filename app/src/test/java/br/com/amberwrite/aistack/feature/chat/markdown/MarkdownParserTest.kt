@@ -67,4 +67,20 @@ class MarkdownParserTest {
         assertTrue(blocks[0] is MdBlock.Quote)
         assertEquals(MdBlock.Rule, blocks[1])
     }
+    @Test
+    fun largeResponseParsesInLinearTime() {
+        val chunk = buildString {
+            append("## Seção\n\nParágrafo com **negrito**, `código` e [link](https://x.y).\n\n")
+            append("- item um\n- item dois\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n")
+            append("```kotlin\nval x = 1\nfun f() = x + 1\n```\n\n> citação\n\n")
+        }
+        val small = chunk.repeat(100)
+        val big = chunk.repeat(1_000) // ~200 KB
+        MarkdownParser.parse(small) // aquece o JIT
+        val t0 = System.nanoTime()
+        val blocks = MarkdownParser.parse(big)
+        val ms = (System.nanoTime() - t0) / 1_000_000
+        assertTrue("${blocks.size} blocos", blocks.size >= 6_000)
+        assertTrue("análise de ${big.length} caracteres levou $ms ms", ms < 3_000)
+    }
 }

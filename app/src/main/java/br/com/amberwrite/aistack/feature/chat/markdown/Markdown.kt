@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -71,8 +72,10 @@ import br.com.amberwrite.aistack.ui.designsystem.HapticKind
 import br.com.amberwrite.aistack.ui.designsystem.components.TypingCaret
 import br.com.amberwrite.aistack.ui.designsystem.rememberAiHaptics
 import br.com.amberwrite.aistack.ui.icons.Lucide
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val CARET_ID = "caret"
 
@@ -102,7 +105,7 @@ fun MarkdownContent(
     color: Color = AiTheme.colors.fg,
     caret: Boolean = false,
 ) {
-    val blocks = remember(markdown) { MarkdownParser.parse(markdown) }
+    val blocks = rememberMarkdownBlocks(markdown, streaming = caret)
     val c = AiTheme.colors
     val colors = MdColors(color, c.fg2, c.fg3, c.accent, c.surface2, c.fg, c.line, c.accent)
     val uri = LocalUriHandler.current
@@ -113,6 +116,43 @@ fun MarkdownContent(
         val lastIsText = blocks.lastOrNull().let { it is MdBlock.Paragraph || it is MdBlock.Heading }
         if (caret && !lastIsText) TypingCaret(height = 14.dp)
     }
+}
+
+/** Textos até este tamanho são analisados na hora; acima, fora da thread principal. */
+internal const val SYNC_PARSE_LIMIT = 8_000
+
+/** Espera entre deltas de uma resposta grande em streaming antes de reanalisar. */
+private const val STREAM_PARSE_DEBOUNCE_MS = 120L
+
+/**
+ * Blocos do [markdown]. Textos curtos são analisados de forma síncrona (sem piscar); os longos,
+ * em [Dispatchers.Default], mantendo os blocos anteriores na tela até o novo resultado. Em
+ * streaming, deltas seguidos se juntam numa análise só (o efeito anterior é cancelado).
+ */
+@Composable
+private fun rememberMarkdownBlocks(markdown: String, streaming: Boolean): List<MdBlock> {
+    val cache = remember { ParseCache() }
+    // Lido aqui para recompor quando a análise em segundo plano termina.
+    var landed by remember { mutableIntStateOf(0) }
+    @Suppress("UNUSED_VARIABLE") val observe = landed
+    if (cache.source != markdown && (markdown.length <= SYNC_PARSE_LIMIT || cache.source == null)) {
+        cache.blocks = MarkdownParser.parse(markdown)
+        cache.source = markdown
+    }
+    LaunchedEffect(markdown) {
+        if (cache.source == markdown) return@LaunchedEffect
+        if (streaming) delay(STREAM_PARSE_DEBOUNCE_MS)
+        val parsed = withContext(Dispatchers.Default) { MarkdownParser.parse(markdown) }
+        cache.blocks = parsed
+        cache.source = markdown
+        landed++
+    }
+    return cache.blocks
+}
+
+private class ParseCache {
+    var source: String? = null
+    var blocks: List<MdBlock> = emptyList()
 }
 
 @Composable
@@ -260,7 +300,10 @@ fun MdCodeBlock(code: String, language: String?, modifier: Modifier = Modifier) 
         annotation = c.accent.copy(alpha = 0.8f),
         punctuation = c.fg3,
     )
-    val highlighted = remember(code, language, palette) { highlight(code, language, palette) }
+    // Blocos enormes ficam sem realce: tokenizar dezenas de milhares de linhas trava a rolagem.
+    val highlighted = remember(code, language, palette) {
+        if (code.length > HIGHLIGHT_LIMIT) AnnotatedString(code) else highlight(code, language, palette)
+    }
     val copyLabel = stringResource(R.string.chat_code_copy)
     val copiedLabel = stringResource(R.string.chat_code_copied)
     Column(
@@ -324,6 +367,9 @@ data class SyntaxPalette(
     val annotation: Color,
     val punctuation: Color,
 )
+
+/** Acima deste tamanho o bloco de código é mostrado sem realce. */
+internal const val HIGHLIGHT_LIMIT = 40_000
 
 fun highlight(code: String, language: String?, p: SyntaxPalette): AnnotatedString = buildAnnotatedString {
     append(code)

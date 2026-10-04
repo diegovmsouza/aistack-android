@@ -53,4 +53,19 @@ class SessionsLogicTest {
         assertEquals(ListContent.Loading, listContentOf(0, 0, false, null, online))
         assertEquals(ListContent.Empty, listContentOf(0, 0, true, null, online))
     }
+    @Test
+    fun previewUsesHostLastMessageUntilALiveEventArrives() {
+        val json = com.google.gson.JsonParser.parseString(
+            """[{"id":"a","provider":"claude","projectPath":"/p","title":"A","updatedAt":2,
+                "lastMessage":{"role":"user","text":" oi "}},
+               {"id":"b","provider":"claude","projectPath":"/p","title":"B","updatedAt":1,
+                "lastMessage":{"role":"assistant","text":"pronto"}},
+               {"id":"c","provider":"claude","projectPath":"/p","title":"C","updatedAt":0}]"""
+        )
+        val convs = br.com.amberwrite.aistack.data.model.Conversation.parseList(json)
+        assertEquals(listOf("Você: oi", "pronto", null), convs.map { it.lastMessage })
+        val items = buildSessionSections(convs, emptyList(), mapOf("b" to "ao vivo"), "", null, at(4, 12), zone)
+            .flatMap { it.items }
+        assertEquals(listOf("Você: oi", "ao vivo", null), items.map { it.preview })
+    }
 }
