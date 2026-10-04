@@ -13,3 +13,6 @@
 | 2026-10-03 20:40:42 | HIBERNAÇÃO | pausa #2 até 21:10:40; o modelo só volta com o bloco seguinte aberto |
 | 2026-10-03 20:46:03 | CICLO LIVRE inicia | usuário mandou abandonar a checagem e avançar (20:46) (antes: pause #2, restavam 24m37s; autorizado pelo usuário) |
 | 2026-10-03 21:00:24 | AQUECIMENTO automático | AQUECER: ok; evento de limite: sim (status allowed, tipo five_hour); janela de 5 h termina às 04/10 02:00:00 (utilização 0%); semana 12% (reseta 07/10 05:00:00); próximo aquecimento às 04/10 02:00:20 |
+| 2026-10-04 10:10:14 | AUTOCOMPACT 150K já vigente | autoCompactWindow=150000; nada a digitar |
+| 2026-10-04 10:10:14 | CICLO LIVRE encerra | desde 03/10 20:46:03 (usuário mandou abandonar a checagem e avançar (20:46)); autorizado pelo usuário no chat |
+| 2026-10-04 10:10:14 | TRABALHO #3 inicia | novo turno longo (boot) |
