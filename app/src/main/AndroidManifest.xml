@@ -55,6 +55,15 @@
                     android:scheme="aistack"
                     android:host="chat" />
             </intent-filter>
+
+            <!-- Caixa de pendências (notificação agregada): aistack://pending -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="aistack"
+                    android:host="pending" />
+            </intent-filter>
         </activity>
 
         <!-- Botões Permitir/Negar das notificações de permissão -->

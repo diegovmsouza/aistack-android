@@ -69,6 +69,9 @@ fun AiStackApp(deepLink: Uri?, onDeepLinkConsumed: () -> Unit) {
             is DeepLink.Chat -> if (container.pairingStore.isPaired) {
                 nav.navigate(Routes.chat(target.conversationId)) { launchSingleTop = true }
             }
+            DeepLink.Pending -> if (container.pairingStore.isPaired) {
+                nav.navigate(Routes.PENDING) { launchSingleTop = true }
+            }
             null -> Unit
         }
         onDeepLinkConsumed()
@@ -112,10 +115,17 @@ fun AiStackApp(deepLink: Uri?, onDeepLinkConsumed: () -> Unit) {
                     }
                 )
             }
-            composable(Routes.CHAT, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entry ->
+            composable(
+                Routes.CHAT,
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType },
+                    navArgument("mention") { type = NavType.StringType; nullable = true; defaultValue = null }
+                )
+            ) { entry ->
                 val id = entry.arguments?.getString("id").orEmpty()
                 ChatScreen(
                     conversationId = id,
+                    initialMention = entry.arguments?.getString("mention"),
                     onBack = { nav.backOrSessions() },
                     onOpenFiles = { nav.navigate(Routes.files(it)) },
                     onRepair = { nav.navigate(Routes.PAIR) }

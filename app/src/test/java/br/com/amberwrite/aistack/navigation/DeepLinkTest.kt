@@ -8,6 +8,12 @@ import org.junit.Test
 class DeepLinkTest {
 
     @Test
+    fun pending() {
+        assertEquals(DeepLink.Pending, DeepLink.parse("aistack://pending"))
+        assertEquals(DeepLink.Pending, DeepLink.parse("aistack://pending/"))
+    }
+
+    @Test
     fun chat() {
         assertEquals(DeepLink.Chat("c1"), DeepLink.parse("aistack://chat/c1"))
         assertEquals(DeepLink.Chat("a b"), DeepLink.parse("aistack://chat/a%20b?x=1"))

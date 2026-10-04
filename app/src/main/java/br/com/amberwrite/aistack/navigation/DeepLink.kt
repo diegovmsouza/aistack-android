@@ -8,18 +8,22 @@ import java.net.URLDecoder
  * `android.net.Uri`) para ser testável na JVM.
  *
  * - `aistack://pair?…` (e os links http(s) que [PairLink.parse] aceita) → [Pair];
- * - `aistack://chat/{id}` → [Chat] (usado pelas notificações).
+ * - `aistack://chat/{id}` → [Chat] (usado pelas notificações);
+ * - `aistack://pending` → [Pending] (notificação agregada de pendências).
  */
 sealed interface DeepLink {
     data class Pair(val link: PairLink) : DeepLink
     data class Chat(val conversationId: String) : DeepLink
+    data object Pending : DeepLink
 
     companion object {
         private const val CHAT_PREFIX = "aistack://chat/"
+        private const val PENDING = "aistack://pending"
 
         fun parse(raw: String?): DeepLink? {
             val text = raw?.trim().orEmpty()
             if (text.isEmpty()) return null
+            if (text.substringBefore('?').trimEnd('/').equals(PENDING, ignoreCase = true)) return Pending
             if (text.startsWith(CHAT_PREFIX, ignoreCase = true)) {
                 val id = text.substring(CHAT_PREFIX.length).substringBefore('?').substringBefore('#').trim('/')
                 if (id.isEmpty()) return null

@@ -75,7 +75,8 @@ fun ChatScreen(
     conversationId: String,
     onBack: () -> Unit,
     onOpenFiles: (String) -> Unit,
-    onRepair: () -> Unit
+    onRepair: () -> Unit,
+    initialMention: String? = null
 ) {
     val vm = containerViewModel(key = "chat:$conversationId") { ChatViewModel(it, conversationId) }
     val state by vm.state.collectAsStateWithLifecycle()
