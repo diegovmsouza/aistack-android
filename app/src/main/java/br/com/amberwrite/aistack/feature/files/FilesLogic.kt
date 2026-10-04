@@ -75,6 +75,9 @@ object FilesLogic {
     fun crumbs(path: String?, roots: List<String>): List<Crumb> {
         val rootsCrumb = Crumb(label = "", path = null, isRoots = true)
         if (path.isNullOrEmpty()) return listOf(rootsCrumb)
+        // Raízes ainda não carregadas: só a pasta atual, para a trilha não saltar do caminho
+        // absoluto para o relativo quando elas chegarem.
+        if (roots.isEmpty()) return listOf(rootsCrumb, Crumb(label = displayName(path), path = path))
         val sep = separatorOf(path)
         val root = rootOf(path, roots)
         val out = mutableListOf(rootsCrumb)

@@ -303,7 +303,9 @@ fun AiStackApp(
             val paired = container.pairingStore.isPaired
             when (val target = DeepLink.parse(deepLink.toString())) {
                 is DeepLink.Pair -> {
-                    if (paired) {
+                    // O mesmo desktop de novo (o código já foi gasto): nada a fazer.
+                    if (paired && container.pairingStore.link.value == target.link.withoutCode()) Unit
+                    else if (paired) {
                         confirmRepair = target.link
                     } else {
                         pendingPair = target.link

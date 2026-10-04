@@ -94,7 +94,7 @@ private enum class Phase { Loading, Failed, Empty, Thread }
 fun ChatScreen(
     conversationId: String,
     onBack: () -> Unit,
-    onOpenFiles: (String) -> Unit,
+    onOpenFiles: (String?) -> Unit,
     onRepair: () -> Unit,
     initialMention: String? = null,
 ) {
@@ -142,7 +142,7 @@ fun ChatScreen(
             onBack = onBack,
             onRename = { showRename = true },
             onArchive = { showArchive = true },
-            onOpenFiles = { onOpenFiles(conversationId) },
+            onOpenFiles = { onOpenFiles(state.conversation?.projectPath?.ifBlank { null }) },
             onAgents = { showAgents = true },
             onRefresh = vm::refresh,
         )

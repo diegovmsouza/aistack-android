@@ -61,9 +61,11 @@ class FilesLogicTest {
     }
 
     @Test
-    fun `trilha sem raízes quebra o caminho inteiro`() {
-        val crumbs = FilesLogic.crumbs("/a/b", emptyList())
+    fun `trilha fora das raízes quebra o caminho inteiro`() {
+        val crumbs = FilesLogic.crumbs("/a/b", listOf("/x"))
         assertEquals(listOf(null, "/a", "/a/b"), crumbs.map { it.path })
+        // Raízes ainda não carregadas: só a pasta atual (a trilha não salta quando chegam).
+        assertEquals(listOf(null, "/a/b"), FilesLogic.crumbs("/a/b", emptyList()).map { it.path })
         assertEquals(1, FilesLogic.crumbs(null, emptyList()).size)
     }
 

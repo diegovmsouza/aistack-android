@@ -43,7 +43,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) deepLink = intent?.viewData()
+        // Reaberta pelas recentes, a tarefa traz de volta o intent raiz (ex.: o link de pareamento já usado).
+        val fromHistory = (intent?.flags ?: 0) and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
+        if (savedInstanceState == null && !fromHistory) deepLink = intent?.viewData()
 
         val container = AiStackApplication.container(this)
         setContent {

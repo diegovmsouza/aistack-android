@@ -250,7 +250,9 @@ fun rememberThumbnail(uri: String?, maxSide: Dp = 72.dp): Painter? {
     val px = with(density) { maxSide.roundToPx() }.coerceAtLeast(32)
     val state = produceState<Painter?>(initialValue = null, uri, px) {
         value = if (uri == null) null else withContext(Dispatchers.IO) {
-            runCatching { decodeThumbnail(context, Uri.parse(uri), px) }.getOrNull()?.let { BitmapPainter(it.asImageBitmap()) }
+            runCatching { decodeThumbnail(context, Uri.parse(uri), px) }
+                .onFailure { android.util.Log.w("AiStack", "miniatura falhou: $uri", it) }
+                .getOrNull()?.let { BitmapPainter(it.asImageBitmap()) }
         }
     }
     return state.value
@@ -258,13 +260,17 @@ fun rememberThumbnail(uri: String?, maxSide: Dp = 72.dp): Painter? {
 
 internal fun decodeThumbnail(context: Context, uri: Uri, maxSide: Int): Bitmap? {
     val resolver = context.contentResolver
+    // Arquivo do próprio app (ex.: foto da câmera): abre direto, sem passar pelo ContentResolver.
+    val open: () -> java.io.InputStream? =
+        if (uri.scheme == "file") ({ uri.path?.let { java.io.File(it).inputStream() } }) else ({ resolver.openInputStream(uri) })
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: return null
+    // Só com as dimensões, decodeStream devolve null por definição: o resultado está em `bounds`.
+    open()?.use { BitmapFactory.decodeStream(it, null, bounds) }
     if (bounds.outWidth <= 0) return null
     val opts = BitmapFactory.Options().apply { inSampleSize = sampleSizeFor(bounds.outWidth, bounds.outHeight, maxSide) }
-    val bmp = resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, opts) } ?: return null
+    val bmp = open()?.use { BitmapFactory.decodeStream(it, null, opts) } ?: return null
     val rotation = runCatching {
-        resolver.openInputStream(uri)?.use {
+        open()?.use {
             exifRotation(ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL))
         }
     }.getOrNull() ?: 0
