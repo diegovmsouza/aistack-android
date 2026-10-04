@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Caixa de pendências -->
+    <string name="pending_title">Pendências</string>
+    <string name="pending_refresh_cd">Recarregar pendências</string>
+    <string name="pending_subtitle_empty">Tudo em dia</string>
+    <plurals name="pending_subtitle_count">
+        <item quantity="one">%d pedido aguardando você</item>
+        <item quantity="other">%d pedidos aguardando você</item>
+    </plurals>
+    <string name="pending_loading">Carregando pendências…</string>
+    <string name="pending_empty_title">Nada pendente</string>
+    <string name="pending_empty_body">Pedidos de permissão e perguntas dos agentes aparecem aqui, de todas as conversas.</string>
+    <string name="pending_error_title">Não deu para carregar</string>
+    <string name="pending_error_body">Sem conexão com o desktop. Tente de novo quando ele estiver online.</string>
+    <string name="pending_retry">Tentar de novo</string>
+    <string name="pending_unsupported">O desktop não oferece a lista de pendências. Atualize o AiStack; por ora só aparecem pedidos novos.</string>
+    <string name="pending_open_chat_cd">Abrir a conversa %1$s</string>
+    <string name="pending_busy">Trabalhando</string>
+    <string name="pending_waiting">Aguardando você</string>
+    <string name="pending_requested_ago">pedido %1$s</string>
+    <string name="pending_tool_label">Ferramenta</string>
+    <string name="pending_reason_label">Motivo</string>
+    <string name="pending_preview_truncated">Prévia cortada. Abra a conversa para ver tudo.</string>
+    <string name="pending_reply">Responder</string>
+    <string name="pending_reply_hint">Explique o que a IA deve fazer em vez disso</string>
+    <string name="pending_reply_send">Negar e enviar</string>
+    <string name="pending_reply_send_cd">Negar com esta explicação</string>
+    <string name="pending_reply_cancel">Cancelar</string>
+    <string name="pending_question_title">Pergunta da IA</string>
+    <string name="pending_question_progress">Pergunta %1$d de %2$d</string>
+    <string name="pending_question_send">Enviar respostas</string>
+    <string name="pending_question_skip">Dispensar</string>
+    <string name="pending_question_unreadable">Não deu para ler as opções. Abra a conversa para responder.</string>
+    <string name="pending_answered_allow">Permitido</string>
+    <string name="pending_answered_deny">Negado</string>
+    <string name="pending_answer_failed">Não deu para responder: %1$s</string>
+    <string name="pending_sending">Enviando…</string>
+
+    <!-- Permissão de notificações -->
+    <string name="pending_notif_rationale_title">Receba os pedidos no celular</string>
+    <string name="pending_notif_rationale_body">Ative as notificações para aprovar permissões, responder perguntas e acompanhar as tarefas sem abrir o app.</string>
+    <string name="pending_notif_rationale_allow">Ativar notificações</string>
+    <string name="pending_notif_rationale_settings">Abrir ajustes</string>
+    <string name="pending_notif_rationale_dismiss">Agora não</string>
+    <string name="pending_notif_rationale_dismiss_cd">Dispensar aviso de notificações</string>
+
+    <!-- Canais -->
+    <string name="channel_pending_name">Aprovações e perguntas</string>
+    <string name="channel_pending_desc">Pedidos de permissão e perguntas feitas pela IA. Responda direto da notificação.</string>
+    <string name="channel_progress_name">Tarefas em andamento</string>
+    <string name="channel_progress_desc">Acompanhamento ao vivo: ferramenta atual, sub-agentes e tempo do turno.</string>
+    <string name="channel_done_name">Tarefas concluídas</string>
+    <string name="channel_done_desc">Aviso quando a IA termina um turno ou encontra um erro.</string>
+
+    <!-- Notificação de permissão / pergunta -->
+    <string name="notif_permission_title">Permissão: %1$s</string>
+    <string name="notif_question_title">Pergunta da IA</string>
+    <plurals name="notif_question_more">
+        <item quantity="one">+%d pergunta</item>
+        <item quantity="other">+%d perguntas</item>
+    </plurals>
+    <string name="notif_permission_fallback">A IA pede autorização para usar %1$s.</string>
+    <string name="notif_question_fallback">A IA quer te perguntar algo.</string>
+    <string name="notif_reason">Motivo: %1$s</string>
+    <string name="notif_failed">Falhou: %1$s</string>
+    <string name="notif_sending">Enviando resposta…</string>
+    <string name="notif_action_allow">Permitir</string>
+    <string name="notif_action_deny">Negar</string>
+    <string name="notif_action_reply">Responder</string>
+    <string name="notif_action_dismiss">Dispensar</string>
+    <string name="notif_reply_label_permission">Negar e explicar</string>
+    <string name="notif_reply_label_question">Sua resposta (número ou texto)</string>
+    <string name="notif_reply_label_questions">Uma resposta por linha</string>
+    <string name="notif_tool_question_hint">Responder envia uma mensagem para a conversa.</string>
+    <string name="notif_error_busy">a conversa voltou a trabalhar; responda pelo app</string>
+    <string name="notif_error_offline">sem conexão com o desktop</string>
+    <string name="notif_error_timeout">tempo esgotado</string>
+    <string name="notif_error_empty">resposta vazia</string>
+
+    <!-- Resumo do grupo -->
+    <plurals name="notif_summary_title">
+        <item quantity="one">%d pendência</item>
+        <item quantity="other">%d pendências</item>
+    </plurals>
+    <plurals name="notif_summary_line">
+        <item quantity="one">%1$s: %2$d pedido</item>
+        <item quantity="other">%1$s: %2$d pedidos</item>
+    </plurals>
+
+    <!-- Live Update -->
+    <string name="notif_live_title">%1$s</string>
+    <string name="notif_live_working">A IA está trabalhando</string>
+    <string name="notif_live_tool">Usando %1$s</string>
+    <string name="notif_live_waiting">Aguardando você</string>
+    <string name="notif_live_rate_limit">Limite de uso: retoma em %1$s</string>
+    <plurals name="notif_live_subagents">
+        <item quantity="one">%d sub-agente</item>
+        <item quantity="other">%d sub-agentes</item>
+    </plurals>
+    <string name="notif_live_short_waiting">Você</string>
+
+    <!-- Concluído -->
+    <string name="notif_done_title">%1$s</string>
+    <string name="notif_done_ok">A IA terminou de responder.</string>
+    <string name="notif_done_ok_duration">A IA terminou de responder em %1$s.</string>
+    <string name="notif_done_error_title">Erro em %1$s</string>
+    <string name="notif_done_error">O turno terminou com erro.</string>
+    <plurals name="notif_done_summary">
+        <item quantity="one">%d conversa concluída</item>
+        <item quantity="other">%d conversas concluídas</item>
+    </plurals>
+</resources>

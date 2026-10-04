@@ -68,6 +68,8 @@ class ConnectionService : LifecycleService() {
         container.connectSaved()
         if (!started) {
             started = true
+            // Live Updates detalhados (ferramenta/sub-agentes) enquanto o serviço está de pé.
+            LiveDetailSubscriber.forContainer(container).start(lifecycleScope)
             lifecycleScope.launch {
                 container.connectionState
                     .map { label(it) to it }

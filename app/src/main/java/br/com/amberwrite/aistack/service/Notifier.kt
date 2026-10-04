@@ -2,24 +2,33 @@ package br.com.amberwrite.aistack.service
 
 import android.app.Notification
 import br.com.amberwrite.aistack.core.relay.ConnectionState
-import br.com.amberwrite.aistack.data.model.PendingConversation
-import br.com.amberwrite.aistack.data.model.PermissionRequest
 
 /**
  * Notificações do app. Interface para que a lógica de "quando notificar"
- * ([NotificationCoordinator]) possa ser testada sem o Android.
+ * ([NotificationCoordinator]) possa ser testada sem o Android: tudo entra como modelo
+ * semântico ([NotificationModels.kt]) e só a implementação real formata texto.
  */
 interface Notifier {
-    /** Pedido de permissão ou pergunta. [error] repete o aviso quando a resposta falhou. */
-    fun showPermission(request: PermissionRequest, conversationTitle: String, error: String? = null)
+    /** Pedido de permissão ou pergunta (`AskUserQuestion`), canal de pendências. */
+    fun showPermission(notice: PermissionNotice)
 
     fun cancelPermission(conversationId: String, requestId: String)
 
-    /** Conversas ocupadas (canal de progresso). Lista vazia remove a notificação. */
-    fun showProgress(busy: List<PendingConversation>)
+    /** Pergunta de ferramenta aberta no fim do turno (a resposta vira mensagem). */
+    fun showToolQuestion(notice: ToolQuestionNotice)
 
-    /** Turno terminou com o app em segundo plano. */
-    fun showDone(conversationId: String, title: String, text: String, isError: Boolean)
+    fun cancelToolQuestion(conversationId: String)
+
+    /** Resumo do grupo de pendências; `null` remove. */
+    fun showPendingSummary(summary: PendingSummary?)
+
+    /** Live Update de um turno em andamento (canal de progresso). */
+    fun showLive(notice: LiveNotice)
+
+    fun cancelLive(conversationId: String)
+
+    /** Turno concluído ou com erro (canal de concluídos). */
+    fun showDone(notice: DoneNotice)
 
     fun cancelDone(conversationId: String)
 

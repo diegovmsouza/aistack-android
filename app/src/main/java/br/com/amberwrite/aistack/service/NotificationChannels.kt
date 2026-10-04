@@ -3,8 +3,13 @@ package br.com.amberwrite.aistack.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import br.com.amberwrite.aistack.R
 
-/** Canais de notificação: conexão (mínima), pendências (alta), progresso (baixa) e concluído. */
+/**
+ * Canais de notificação: conexão (mínima), pendências (alta, com ações), progresso (baixa,
+ * Live Updates) e concluídos (padrão). Recriar é idempotente: nome/descrição se atualizam,
+ * a importância escolhida pelo usuário é preservada pelo sistema.
+ */
 object NotificationChannels {
     const val CONNECTION = "aistack_connection"
     const val PENDING = "aistack_pending"
@@ -23,17 +28,19 @@ object NotificationChannels {
                     description = "Mantém o celular ligado ao AiStack do desktop."
                     setShowBadge(false)
                 },
-                NotificationChannel(PENDING, "Aprovações e perguntas", NotificationManager.IMPORTANCE_HIGH).apply {
-                    description = "Pedidos de permissão e perguntas feitas pela IA."
+                NotificationChannel(PENDING, context.getString(R.string.channel_pending_name), NotificationManager.IMPORTANCE_HIGH).apply {
+                    description = context.getString(R.string.channel_pending_desc)
                     enableVibration(true)
                     setShowBadge(true)
                 },
-                NotificationChannel(PROGRESS, "Tarefas em andamento", NotificationManager.IMPORTANCE_LOW).apply {
-                    description = "Conversas em que a IA está trabalhando."
+                NotificationChannel(PROGRESS, context.getString(R.string.channel_progress_name), NotificationManager.IMPORTANCE_LOW).apply {
+                    description = context.getString(R.string.channel_progress_desc)
+                    enableVibration(false)
+                    setSound(null, null)
                     setShowBadge(false)
                 },
-                NotificationChannel(DONE, "Tarefas concluídas", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "Aviso quando a IA termina um turno."
+                NotificationChannel(DONE, context.getString(R.string.channel_done_name), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = context.getString(R.string.channel_done_desc)
                     setShowBadge(true)
                 }
             )
