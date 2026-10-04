@@ -110,4 +110,15 @@
         <item quantity="one">%d conversa concluída</item>
         <item quantity="other">%d conversas concluídas</item>
     </plurals>
+    <string name="notif_conn_online">Conectado ao desktop</string>
+    <string name="notif_conn_connecting">Conectando…</string>
+    <string name="notif_conn_host_offline">Desktop offline, aguardando</string>
+    <string name="notif_conn_error">Sem conexão, tentando de novo</string>
+    <string name="notif_conn_auth_rejected">Pareamento recusado</string>
+    <string name="notif_conn_revoked">Aparelho revogado</string>
+    <string name="notif_conn_disconnected">Desconectado</string>
+    <string name="notif_rationale_title">Avisos do desktop</string>
+    <string name="notif_rationale_body">O AiStack avisa quando a IA pede uma autorização, faz uma pergunta ou termina um turno, mesmo com o app fechado. Você responde direto da notificação.</string>
+    <string name="notif_rationale_allow">Permitir</string>
+    <string name="notif_rationale_later">Agora não</string>
 </resources>

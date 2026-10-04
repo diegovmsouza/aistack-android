@@ -45,6 +45,11 @@ class SettingsStore(context: Context) {
         _materialYou.value = enabled
     }
 
+    /** O usuário dispensou a explicação das notificações; não perguntar de novo. */
+    var notificationRationaleDismissed: Boolean
+        get() = prefs.getBoolean(KEY_NOTIF_RATIONALE, false)
+        set(value) { prefs.edit().putBoolean(KEY_NOTIF_RATIONALE, value).apply() }
+
     private fun load() = Settings(
         startAtBoot = prefs.getBoolean(KEY_BOOT, false),
         keepConnected = prefs.getBoolean(KEY_KEEP, true),
@@ -59,5 +64,6 @@ class SettingsStore(context: Context) {
         private const val KEY_DONE = "notify_done"
         private const val KEY_THEME = "theme"
         private const val KEY_MATERIAL_YOU = "material_you"
+        private const val KEY_NOTIF_RATIONALE = "notif_rationale_dismissed"
     }
 }

@@ -418,13 +418,13 @@ class AndroidNotifier(context: Context) : Notifier {
 
     override fun connectionNotification(state: ConnectionState): Notification {
         val text = when (state) {
-            is ConnectionState.Online -> "Conectado ao desktop"
-            is ConnectionState.Connecting, ConnectionState.Handshaking -> "Conectando…"
-            is ConnectionState.HostOffline -> "Desktop offline, aguardando"
-            is ConnectionState.Error -> "Sem conexão, tentando de novo"
-            is ConnectionState.AuthRejected -> "Pareamento recusado"
-            ConnectionState.Revoked -> "Aparelho revogado"
-            ConnectionState.Disconnected -> "Desconectado"
+            is ConnectionState.Online -> ctx.getString(R.string.notif_conn_online)
+            is ConnectionState.Connecting, ConnectionState.Handshaking -> ctx.getString(R.string.notif_conn_connecting)
+            is ConnectionState.HostOffline -> ctx.getString(R.string.notif_conn_host_offline)
+            is ConnectionState.Error -> ctx.getString(R.string.notif_conn_error)
+            is ConnectionState.AuthRejected -> ctx.getString(R.string.notif_conn_auth_rejected)
+            ConnectionState.Revoked -> ctx.getString(R.string.notif_conn_revoked)
+            ConnectionState.Disconnected -> ctx.getString(R.string.notif_conn_disconnected)
         }
         return NotificationCompat.Builder(ctx, NotificationChannels.CONNECTION)
             .setSmallIcon(R.drawable.ic_stat_aistack)

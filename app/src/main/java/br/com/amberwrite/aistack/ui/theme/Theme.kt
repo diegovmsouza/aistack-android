@@ -10,11 +10,12 @@ import androidx.compose.runtime.Composable
 @Composable
 fun AiStackTheme(
     darkTheme: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     br.com.amberwrite.aistack.ui.designsystem.AiStackTheme(
         darkTheme = darkTheme,
-        dynamicColor = false,
+        dynamicColor = dynamicColor,
         content = content,
     )
 }
