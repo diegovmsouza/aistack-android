@@ -53,6 +53,10 @@
 # ECONOMIA (v2)
 #   hibernar       para rodar EM SEGUNDO PLANO depois do 'pause': dorme no shell até o fim da pausa, aplica o orçamento (estende a pausa
 #                  sem acordar o modelo) e só volta com o bloco seguinte aberto (ou se o ciclo mudar).
+#   relogio        para rodar EM SEGUNDO PLANO durante o bloco de trabalho: mostra nas Tarefas em segundo plano o início e o fim do turno
+#                  (UTC-3, no description que 'work' imprime) e conta o que falta a cada minuto; termina no fim do bloco.
+#   faixa          uma linha com a contagem regressiva ao vivo e o início/fim em UTC-3 (usada pela statusLine; só lê o estado).
+#   painel         só o texto do description da tarefa em segundo plano (início e fim em UTC-3) para a fase atual.
 #   medir          lê a cota (5 h e semana) pela chamada mínima do CLI (~US$ 0,001); recusa se o CLI estiver em outra conta que o app.
 #   uso [--registrar 5h=PCT@RESET 7d=PCT@RESET]  mostra ou registra a cota vinda de outra fonte (get_usage do app; RESET em ISO ou epoch).
 #   orcamento      a pausa que o ritmo da semana e a janela de 5 h pedem para o último bloco. exit 0 normal, 40 estendida, 50 reserva.
@@ -125,6 +129,39 @@ hhmmss() { dfmt "$1" '%H:%M:%S'; }
 quando() { if [ "$(dfmt "$1" %Y%m%d)" = "$(date +%Y%m%d)" ]; then hhmmss "$1"; else dfmt "$1" '%d/%m %H:%M:%S'; fi; }
 fmt() { local s=$1; [ "$s" -lt 0 ] && s=$((-s)); printf '%dm%02ds' $((s / 60)) $((s % 60)); }
 fmt_h() { local s=$1; [ "$s" -lt 0 ] && s=0; printf '%dh%02dm' $((s / 3600)) $((s % 3600 / 60)); }
+# UTC-3 fixo (Etc/GMT+3), qualquer que seja o fuso da máquina: é o fuso que o usuário lê nas Tarefas em segundo plano
+u3() { TZ=Etc/GMT+3 date -d "@$1" "+$2" 2>/dev/null || TZ=Etc/GMT+3 date -r "$1" "+$2" 2>/dev/null; }
+hm3() { if [ "$(u3 "$1" %Y%m%d)" = "$(u3 "$(now)" %Y%m%d)" ]; then u3 "$1" '%H:%M'; else u3 "$1" '%d/%m %H:%M'; fi; }
+rotulo() { # texto curto, com início e fim em UTC-3, para o campo description da tarefa em segundo plano (relogio / hibernar)
+  case "$PHASE" in
+    work)  printf 'Turno #%s · trabalho %s → %s (UTC-3)' "$N" "$(hm3 "$START")" "$(hm3 "$END")" ;;
+    pause) printf 'Pausa #%s · %s → volta ao trabalho %s (UTC-3)' "$N" "$(hm3 "$START")" "$(hm3 "$END")" ;;
+    livre) printf 'Turno longo · LIVRE, sem relógio (UTC-3)' ;;
+    *)     printf 'Turno longo · sem ciclo ativo' ;;
+  esac
+}
+faixa() { # uma linha para a statusLine: fase, início e fim em UTC-3 e a contagem regressiva ao vivo (só lê o estado)
+  local ag left r='\033[0m' g='\033[32m' y='\033[33m' v='\033[31m' c
+  ag=$(now); left=$((END - ag)); c=$(printf '%s' "$TL_SLUG")
+  hms() { local t=$1; [ "$t" -lt 0 ] && t=$((-t)); if [ "$t" -ge 3600 ]; then printf '%d:%02d:%02d' $((t / 3600)) $((t % 3600 / 60)) $((t % 60)); else printf '%02d:%02d' $((t / 60)) $((t % 60)); fi; }
+  case "$PHASE" in
+    work)
+      if script_live; then printf "${y}⏸ [%s] TRABALHO #%s suspenso (script «%s»)${r}" "$c" "$N" "$SCRIPT_LABEL"
+      elif [ "$left" -gt 0 ]; then printf "${g}⏱ [%s] TRABALHO #%s %s → %s (UTC-3) · termina em %s${r}" "$c" "$N" "$(hm3 "$START")" "$(hm3 "$END")" "$(hms "$left")"
+      else printf "${v}⚠ [%s] TRABALHO #%s venceu há %s · vistoria e pause${r}" "$c" "$N" "$(hms "$left")"; fi ;;
+    pause)
+      if [ "$left" -gt 0 ]; then printf "${y}⏸ [%s] PAUSA #%s %s → %s (UTC-3) · volta em %s${r}" "$c" "$N" "$(hm3 "$START")" "$(hm3 "$END")" "$(hms "$left")"
+      else printf "${v}▶ [%s] PAUSA #%s encerrada há %s · hora de retomar o trabalho${r}" "$c" "$N" "$(hms "$left")"; fi ;;
+    livre) printf "[%s] LIVRE (sem relógio)" "$c" ;;
+  esac
+}
+tique() { # uma linha de contagem regressiva (a saída da tarefa em segundo plano mostra uma por minuto)
+  local ag; ag=$(now)
+  case "$PHASE" in
+    work)  printf '[%s UTC-3] TRABALHO #%s · restam %s · o turno termina às %s\n' "$(u3 "$ag" %H:%M:%S)" "$N" "$(fmt $((END - ag)))" "$(hm3 "$END")" ;;
+    pause) printf '[%s UTC-3] PAUSA #%s · restam %s · volta ao trabalho às %s\n' "$(u3 "$ag" %H:%M:%S)" "$N" "$(fmt $((END - ag)))" "$(hm3 "$END")" ;;
+  esac
+}
 mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null || echo 0; }
 sq() { local q="'"; printf "'%s'" "${1//$q/$q\\$q$q}"; } # aspas simples seguras para gravar valores no .env
 log() {
@@ -220,6 +257,7 @@ abre_bloco() { # abre o bloco de trabalho N+1 (work e retomar)
   fi
   log "TRABALHO #$N inicia" "${1:-}"
   echo "TRABALHO #$N: ${WORK_MIN} min (até $(hhmmss "$END"))"
+  echo "RELÓGIO: lance em segundo plano \`$TL_ENTRY relogio\` com description=\"$(rotulo)\""
 }
 vistoria_aviso() { # a vistoria vem ANTES de cada pausa
   [ -n "$TL_VISTORIA" ] || return 0
@@ -922,6 +960,7 @@ boot() {
 # ---------- despacho ----------
 if [ "${1:-}" = boot ]; then shift; boot "$@"; exit $?; fi # o boot ainda não tem ciclo: cada fase vem de um filho já com a config nova
 load
+[ "${1:-}" = faixa ] && { faixa; exit 0; } # só leitura: antes do tratamento de script órfão
 if [ "$SCRIPT_T0" -gt 0 ] && ! script_live; then # o wrapper morreu sem fechar (kill -9, reboot): sem crédito
   rot=$SCRIPT_LABEL; script_fecha 0
   log "SCRIPT «$rot» ÓRFÃO" "o processo sumiu sem fechar; sem crédito de tempo (o prazo do bloco #$N segue o que estava)"
@@ -976,7 +1015,7 @@ case "${1:-status}" in
       else
         alarm $((fim - $(now))) pause "$N"
         log "PAUSA #$N inicia (descontada a parada)" "parada de $(fmt $idle) desde o fim do bloco ($motivo); faltam $(fmt $((fim - $(now))))"
-        echo "PAUSA #$N: faltam $(fmt $((fim - $(now)))) (até $(hhmmss "$fim")) — HIBERNE"
+        echo "PAUSA #$N: faltam $(fmt $((fim - $(now)))) (até $(hhmmss "$fim")) — HIBERNE (description=\"$(rotulo)\"; encerre o relogio com TaskStop)"
       fi
       exit 0
     fi
@@ -991,7 +1030,7 @@ case "${1:-status}" in
     PHASE=pause; START=$LAST_WE; END=$pfim; save
     alarm $((END - START)) pause "$N"
     log "PAUSA #$N inicia" "${2:-}${orc:+ · $orc}"
-    echo "PAUSA #$N: $(((END - START + 59) / 60)) min (até $(hhmmss "$END")) — HIBERNE: $TL_ENTRY hibernar (uma tarefa em segundo plano)"
+    echo "PAUSA #$N: $(((END - START + 59) / 60)) min (até $(hhmmss "$END")) — HIBERNE: $TL_ENTRY hibernar (uma tarefa em segundo plano, description=\"$(rotulo)\"; encerre o relogio com TaskStop)"
     [ -z "$orc" ] || echo "$orc" ;;
   livre)
     motivo="${2:-}"; [ -n "$motivo" ] || { echo 'uso: livre "motivo" (ex.: usuário pediu para trabalhar sem relógio)'; exit 2; }
@@ -1173,6 +1212,20 @@ case "${1:-status}" in
     jload
     python3 "$CONSUMO_PY" relatorio --fator7 "${JANELA_FATOR7:-$TL_FATOR7}" --fator5 "${JANELA_FATOR5:-$TL_FATOR5}" \
       --fim7 "${JANELA_FIM7:-0}" --fim5 "${JANELA_FIM:-0}" "$@"; exit $? ;;
+  painel) rotulo; echo; exit 0 ;; # só o texto do description da tarefa em segundo plano (UTC-3)
+  relogio)
+    # Uma tarefa em segundo plano DURANTE o bloco de trabalho: mantém nas Tarefas em segundo plano o início e o fim do turno (UTC-3)
+    # e imprime a contagem regressiva a cada minuto. Termina no fim do bloco (acorda o modelo para a vistoria e o pause). Se o
+    # ciclo mudar antes (pause), espera 120 s pelo TaskStop do modelo antes de sair, para não acordá-lo à toa.
+    if [ "$PHASE" != work ]; then echo "RELÓGIO: não há bloco de trabalho aberto (fase: $PHASE)."; exit 0; fi
+    n0=$N; echo "$(rotulo)"; tique
+    while :; do
+      "$SELF" wait --max 60 >/dev/null 2>&1
+      load
+      if [ "$PHASE" != work ] || [ "$N" != "$n0" ]; then sleep 120; echo "RELÓGIO: o ciclo mudou (fase $PHASE #$N); sem TaskStop, saio."; exit 0; fi
+      if ! script_live && [ "$(now)" -ge "$END" ]; then echo "RELÓGIO: o turno #$N terminou às $(hm3 "$END") (UTC-3):"; "$SELF" status; exit 0; fi
+      tique
+    done ;;
   hibernar)
     # Uma tarefa em segundo plano: dorme no shell (sem modelo) até o fim da pausa; se o orçamento estender a pausa, segue
     # dormindo; só termina (e acorda o modelo) com o bloco seguinte aberto, ou se outro comando mudar o ciclo.
@@ -1181,14 +1234,16 @@ case "${1:-status}" in
       exit 0
     fi
     log "HIBERNAÇÃO" "pausa #$N até $(hhmmss "$END"); o modelo só volta com o bloco seguinte aberto"
+    echo "$(rotulo)"; tique
     while :; do
-      "$SELF" wait >/dev/null 2>&1
+      "$SELF" wait --max 60 >/dev/null 2>&1
       load
       if [ "$PHASE" != pause ]; then echo "HIBERNAR: o ciclo mudou durante a pausa:"; "$SELF" status; exit $?; fi
-      [ "$(now)" -ge "$END" ] || continue
+      [ "$(now)" -ge "$END" ] || { tique; continue; }
       saida=$("$SELF" work "fim da pausa (hibernar)" 2>&1); rc=$?
       if [ "$rc" -eq 40 ]; then
         load; [ "$END" -gt "$(now)" ] || { echo "HIBERNAR: a pausa foi estendida sem prazo novo; pare e confira o 'orcamento'."; exit 1; }
+        echo "PAUSA #$N ESTENDIDA pelo orçamento: $(rotulo)"; tique
         continue
       fi
       printf '%s\n' "$saida"; exit "$rc"

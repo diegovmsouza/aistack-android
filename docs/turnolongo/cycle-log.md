@@ -23,3 +23,4 @@
 | 2026-10-04 11:09:56 | PAUSA #3 ESTENDIDA pelo orçamento | até 11:14:57 · ORÇAMENTO: semana ~35,0% (reseta 07/10 05:00, em 2d17h) · ritmo seguro 0,84%/h · bloco 0,90% em 20 min · 5 h ~58% (reseta 12:00) → pausa de 45 min (configurada 30) para caber no ritmo da semana |
 | 2026-10-04 11:14:57 | TRABALHO #4 inicia | fim da pausa (hibernar) |
 | 2026-10-04 11:14:57 | DESPERTAR pause #3 obsoleto | o ciclo já está em work #4 |
+| 2026-10-04 11:15:18 | TURNO LONGO ENCERRADO | app Android entregue; v0.4.8 publicada (fase anterior: work #4) |
