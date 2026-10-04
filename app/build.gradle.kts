@@ -98,6 +98,12 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.11.0")
 
+    // Markdown do chat (F2): parser CommonMark + GFM; a renderização é Compose própria
+    implementation("org.commonmark:commonmark:0.21.0")
+    implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
+    implementation("org.commonmark:commonmark-ext-gfm-strikethrough:0.21.0")
+    implementation("org.commonmark:commonmark-ext-autolink:0.21.0")
+
     // Criptografia E2E (X25519 e Ed25519) e armazenamento cifrado
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
     implementation("androidx.security:security-crypto:1.1.0")

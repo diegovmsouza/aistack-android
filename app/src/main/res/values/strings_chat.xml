@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cabeçalho -->
+    <string name="chat_back">Voltar</string>
+    <string name="chat_untitled">Nova conversa</string>
+    <string name="chat_more">Mais opções</string>
+    <string name="chat_status_busy">Trabalhando</string>
+    <string name="chat_status_idle">Ocioso</string>
+    <string name="chat_status_offline">Desconectado</string>
+    <string name="chat_status_pending">Aguardando você</string>
+    <string name="chat_menu_rename">Renomear</string>
+    <string name="chat_menu_files">Arquivos</string>
+    <string name="chat_menu_agents">Agentes</string>
+    <string name="chat_menu_refresh">Recarregar</string>
+    <string name="chat_menu_archive">Arquivar</string>
+    <string name="chat_dismiss">Dispensar aviso</string>
+    <string name="chat_cancel">Cancelar</string>
+
+    <!-- Renomear / arquivar -->
+    <string name="chat_rename_title">Renomear conversa</string>
+    <string name="chat_rename_placeholder">Título da conversa</string>
+    <string name="chat_rename_confirm">Salvar</string>
+    <string name="chat_archive_title">Arquivar conversa?</string>
+    <string name="chat_archive_text">A conversa sai da lista principal. O histórico continua no computador e pode ser restaurado.</string>
+    <string name="chat_archive_confirm">Arquivar</string>
+
+    <!-- Estados -->
+    <string name="chat_loading">Carregando a conversa…</string>
+    <string name="chat_load_failed_title">Não foi possível abrir a conversa</string>
+    <string name="chat_empty_title">Comece a conversa</string>
+    <string name="chat_empty_body">Escreva abaixo ou mencione um arquivo com @. A resposta aparece aqui em tempo real.</string>
+    <string name="chat_empty_body_offline">Sem conexão com o computador agora. O que você escrever será enviado assim que ele voltar.</string>
+    <string name="chat_retry">Tentar de novo</string>
+    <string name="chat_scroll_to_end">Ir para o fim</string>
+    <string name="chat_loading_older">Carregando mensagens anteriores…</string>
+    <string name="chat_load_older">Carregar mensagens anteriores</string>
+
+    <!-- Fila -->
+    <string name="chat_queue_hint">Na fila (%1$d) · toque para enviar já</string>
+    <string name="chat_queue_attachments">Anexos: %1$d</string>
+
+    <!-- Markdown -->
+    <string name="chat_code_copy">Copiar código</string>
+    <string name="chat_code_copied">Copiado</string>
+    <string name="chat_code_label">código</string>
+    <string name="chat_table_description">Tabela com %1$d linhas e %2$d colunas</string>
+
+    <!-- Itens da thread -->
+    <string name="chat_collapse">Recolher</string>
+    <string name="chat_collapsed">Recolhido</string>
+    <string name="chat_expand">Expandir</string>
+    <string name="chat_expanded">Expandido</string>
+    <string name="chat_load_full">Carregar completo</string>
+    <string name="chat_load_full_failed">Não foi possível carregar o conteúdo completo.</string>
+    <string name="chat_load_full_retry">Tentar carregar de novo</string>
+    <string name="chat_status_thinking">Pensando…</string>
+    <string name="chat_status_tool">Executando %1$s…</string>
+    <string name="chat_status_working">Trabalhando…</string>
+    <string name="chat_steer_label">Direcionamento</string>
+    <string name="chat_thinking">Raciocínio</string>
+    <string name="chat_thinking_live">Pensando…</string>
+    <string name="chat_turn_error">O turno terminou com erro</string>
+    <string name="chat_turn_interrupted">Turno interrompido</string>
+
+    <!-- Ferramentas -->
+    <string name="chat_tool_interrupted">Interrompida</string>
+    <string name="chat_tool_input">Entrada</string>
+    <string name="chat_tool_output">Saída</string>
+    <string name="chat_tool_error">Erro</string>
+    <string name="chat_tool_running">Executando…</string>
+    <string name="chat_tool_clipped">Saída longa encurtada na tela.</string>
+
+    <!-- Sub-agentes -->
+    <string name="chat_agents_open">Agentes</string>
+    <string name="chat_agents_open_running">Agentes, %1$d em execução</string>
+    <string name="chat_agents_title">Agentes</string>
+    <string name="chat_agents_none_short">Nenhum sub-agente nesta conversa</string>
+    <string name="chat_agents_empty_title">Nenhum agente ainda</string>
+    <string name="chat_agents_empty_body">Quando o assistente delegar tarefas a sub-agentes, você acompanha cada um aqui.</string>
+    <string name="chat_agent_running">Em execução</string>
+    <string name="chat_agent_done">Concluído</string>
+    <string name="chat_agent_failed">Falhou</string>
+    <string name="chat_agent_interrupted">Interrompido</string>
+    <string name="chat_agent_no_steps">Sem etapas registradas.</string>
+    <string name="chat_agent_starting">Iniciando…</string>
+    <plurals name="chat_agent_steps">
+        <item quantity="one">%1$d etapa</item>
+        <item quantity="many">%1$d etapas</item>
+        <item quantity="other">%1$d etapas</item>
+    </plurals>
+    <plurals name="chat_agents_count">
+        <item quantity="one">%1$d agente</item>
+        <item quantity="many">%1$d agentes</item>
+        <item quantity="other">%1$d agentes</item>
+    </plurals>
+    <plurals name="chat_agents_running">
+        <item quantity="one">%1$d em execução</item>
+        <item quantity="many">%1$d em execução</item>
+        <item quantity="other">%1$d em execução</item>
+    </plurals>
+
+    <!-- Permissões e perguntas -->
+    <string name="chat_permission_sending">Enviando resposta…</string>
+    <string name="chat_question_sending">Enviando resposta…</string>
+    <string name="chat_question_multi_hint">Escolha uma ou mais opções</string>
+    <string name="chat_question_other">Outro</string>
+    <string name="chat_question_other_placeholder">Escreva sua resposta</string>
+    <string name="chat_question_skip">Pular</string>
+    <string name="chat_question_submit">Responder</string>
+    <string name="chat_answer_failed">Falha ao responder: %1$s</string>
+</resources>

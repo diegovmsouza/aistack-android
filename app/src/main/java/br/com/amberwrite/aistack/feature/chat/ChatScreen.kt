@@ -1,74 +1,94 @@
 package br.com.amberwrite.aistack.feature.chat
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.amberwrite.aistack.AiStackApplication
-import br.com.amberwrite.aistack.core.rpc.asObj
-import br.com.amberwrite.aistack.core.rpc.displayText
-import br.com.amberwrite.aistack.core.rpc.str
-import br.com.amberwrite.aistack.data.model.ChatItem
-import br.com.amberwrite.aistack.data.model.PermissionRequest
-import br.com.amberwrite.aistack.data.model.Question
+import br.com.amberwrite.aistack.R
+import br.com.amberwrite.aistack.data.model.ConversationOrigin
+import br.com.amberwrite.aistack.data.model.QueuedMessage
+import br.com.amberwrite.aistack.feature.chat.composer.ChatComposer
+import br.com.amberwrite.aistack.feature.chat.thread.AgentsSheet
+import br.com.amberwrite.aistack.feature.chat.thread.ChatEmptyArt
+import br.com.amberwrite.aistack.feature.chat.thread.ThreadActions
+import br.com.amberwrite.aistack.feature.chat.thread.ThreadList
+import br.com.amberwrite.aistack.feature.chat.thread.ThreadMaxWidth
+import br.com.amberwrite.aistack.feature.chat.thread.ThreadSkeleton
 import br.com.amberwrite.aistack.feature.common.AiTextInput
-import br.com.amberwrite.aistack.feature.common.CenteredLoading
+import br.com.amberwrite.aistack.feature.common.ConfirmDialog
 import br.com.amberwrite.aistack.feature.common.ErrorStrip
-import br.com.amberwrite.aistack.feature.common.FeatureScaffold
 import br.com.amberwrite.aistack.feature.common.bannerDetail
 import br.com.amberwrite.aistack.feature.common.containerViewModel
 import br.com.amberwrite.aistack.feature.common.toBanner
+import br.com.amberwrite.aistack.ui.designsystem.AiHaptics
 import br.com.amberwrite.aistack.ui.designsystem.AiTheme
+import br.com.amberwrite.aistack.ui.designsystem.rememberAiHaptics
+import br.com.amberwrite.aistack.ui.designsystem.components.AgentStatus
 import br.com.amberwrite.aistack.ui.designsystem.components.AiButton
 import br.com.amberwrite.aistack.ui.designsystem.components.AiChip
 import br.com.amberwrite.aistack.ui.designsystem.components.AiIconButton
-import br.com.amberwrite.aistack.ui.designsystem.components.ButtonSize
+import br.com.amberwrite.aistack.ui.designsystem.components.AiStackTopBar
 import br.com.amberwrite.aistack.ui.designsystem.components.ButtonVariant
 import br.com.amberwrite.aistack.ui.designsystem.components.ConnectionBanner
-import br.com.amberwrite.aistack.ui.designsystem.components.PermissionCard
-import br.com.amberwrite.aistack.ui.designsystem.components.PermissionState
+import br.com.amberwrite.aistack.ui.designsystem.components.EmptyState
+import br.com.amberwrite.aistack.ui.designsystem.components.Origin
+import br.com.amberwrite.aistack.ui.designsystem.components.OriginBadge
 import br.com.amberwrite.aistack.ui.designsystem.components.ProviderBadge
-import br.com.amberwrite.aistack.ui.designsystem.components.QuestionAnswer
-import br.com.amberwrite.aistack.ui.designsystem.components.QuestionCard
 import br.com.amberwrite.aistack.ui.designsystem.components.Spinner
-import br.com.amberwrite.aistack.ui.designsystem.components.ToolCard
-import br.com.amberwrite.aistack.ui.designsystem.components.ToolKind
+import br.com.amberwrite.aistack.ui.designsystem.components.StatusDot
 import br.com.amberwrite.aistack.ui.icons.Lucide
-import br.com.amberwrite.aistack.data.model.ToolStatus as ModelToolStatus
-import br.com.amberwrite.aistack.ui.designsystem.components.QuestionOption as DsQuestionOption
-import br.com.amberwrite.aistack.ui.designsystem.components.ToolStatus as DsToolStatus
+
+/** Fase principal da área da thread (para a transição entre esqueleto, erro, vazio e lista). */
+private enum class Phase { Loading, Failed, Empty, Thread }
 
 /**
- * Chat de uma conversa. Versão funcional da Wave 1: transcrição em texto simples (sem
- * Markdown), cartões de ferramenta, permissões, perguntas, fila e compositor.
+ * Chat de uma conversa: cabeçalho com provedor/origem/estado, thread paginada em Markdown
+ * com ferramentas, sub-agentes, permissões e perguntas inline, fila acima do compositor e
+ * o compositor (F3). Sair da tela devolve a assinatura a `summary` sem interromper nada.
  */
 @Composable
 fun ChatScreen(
@@ -76,276 +96,392 @@ fun ChatScreen(
     onBack: () -> Unit,
     onOpenFiles: (String) -> Unit,
     onRepair: () -> Unit,
-    initialMention: String? = null
+    initialMention: String? = null,
 ) {
     val vm = containerViewModel(key = "chat:$conversationId") { ChatViewModel(it, conversationId) }
     val state by vm.state.collectAsStateWithLifecycle()
     val container = AiStackApplication.container(LocalContext.current)
-    val chat = state.chat
+    val haptics = rememberAiHaptics()
+    val c = AiTheme.colors
 
     DisposableEffect(conversationId) {
         container.setVisibleChat(conversationId)
         onDispose { container.clearVisibleChat(conversationId) }
     }
+    LaunchedEffect(state.local.archived) { if (state.local.archived) onBack() }
 
-    FeatureScaffold(
-        title = state.title,
-        subtitle = chat.conversation?.projectPath,
-        onBack = onBack,
-        modifier = Modifier.imePadding(),
-        actions = {
-            AiIconButton(icon = Lucide.Folder, contentDescription = "Arquivos", onClick = { onOpenFiles(conversationId) })
-            AiIconButton(icon = Lucide.RefreshCw, contentDescription = "Recarregar", onClick = vm::refresh)
-        }
+    var showAgents by rememberSaveable { mutableStateOf(false) }
+    var showRename by rememberSaveable { mutableStateOf(false) }
+    var showArchive by rememberSaveable { mutableStateOf(false) }
+
+    val actions = remember(vm) {
+        ThreadActions(
+            onLoadOlder = vm::loadOlder,
+            onExpand = vm::expand,
+            onRetry = vm::retryLastTurn,
+            onAllow = vm::allow,
+            onDeny = vm::deny,
+            onAnswerQuestion = vm::answerQuestion,
+            onDismissQuestion = vm::dismissQuestion,
+            onAnswerTool = vm::answerToolQuestion,
+            onOpenAgents = { showAgents = true },
+        )
+    }
+    val listState = rememberLazyListState()
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(c.bg)
+            .imePadding(),
     ) {
+        ChatHeader(
+            state = state,
+            scrolled = listState.canScrollForward,
+            haptics = haptics,
+            onBack = onBack,
+            onRename = { showRename = true },
+            onArchive = { showArchive = true },
+            onOpenFiles = { onOpenFiles(conversationId) },
+            onAgents = { showAgents = true },
+            onRefresh = vm::refresh,
+        )
         ConnectionBanner(
             state = state.connection.toBanner(),
             detail = state.connection.bannerDetail(),
             onRetry = container::retry,
-            onRepair = onRepair
+            onRepair = onRepair,
         )
-        chat.error?.let { ErrorStrip(it) }
-        chat.warning?.let { ErrorStrip(it) }
-        state.local.actionError?.let { ErrorStrip(it) }
+        Strip(state.chat.warning, onDismiss = null)
+        Strip(state.local.actionError, onDismiss = vm::dismissError)
 
+        val phase = when {
+            state.initialLoading -> Phase.Loading
+            state.loadFailed -> Phase.Failed
+            state.isEmpty -> Phase.Empty
+            else -> Phase.Thread
+        }
+        val motion = AiTheme.motion
         Box(Modifier.weight(1f).fillMaxWidth()) {
-            if (chat.loading && chat.items.isEmpty()) {
-                CenteredLoading(text = "Carregando conversa…")
-            } else {
-                Transcript(state, vm)
-            }
-        }
-        BottomPanel(state, vm)
-    }
-}
-
-@Composable
-private fun Transcript(state: ChatViewModel.UiState, vm: ChatViewModel) {
-    val chat = state.chat
-    val listState = rememberLazyListState()
-    val total = chat.items.size + chat.pending.size
-    LaunchedEffect(total, chat.items.lastOrNull()?.key) {
-        if (total > 0) listState.animateScrollToItem(listState.layoutInfo.totalItemsCount.coerceAtLeast(1) - 1)
-    }
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        if (chat.hasMore) {
-            item(key = "older") {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    AiButton(
-                        text = "Carregar anteriores",
-                        onClick = vm::loadOlder,
-                        variant = ButtonVariant.Ghost,
-                        size = ButtonSize.Small,
-                        loading = chat.loadingOlder
+            AnimatedContent(
+                targetState = phase,
+                transitionSpec = { fadeIn(motion.fade()) togetherWith fadeOut(motion.fade()) },
+                label = "chatPhase",
+                modifier = Modifier.fillMaxSize(),
+            ) { p ->
+                when (p) {
+                    Phase.Loading -> ThreadSkeleton()
+                    Phase.Failed -> CenteredBox {
+                        EmptyState(
+                            title = stringResource(R.string.chat_load_failed_title),
+                            body = state.chat.error,
+                            art = { ChatEmptyArt(Modifier.width(140.dp)) },
+                            accent = c.danger,
+                            primaryAction = {
+                                AiButton(
+                                    text = stringResource(R.string.chat_retry),
+                                    onClick = vm::refresh,
+                                    leadingIcon = Lucide.RefreshCw,
+                                    loading = state.chat.loading,
+                                )
+                            },
+                        )
+                    }
+                    Phase.Empty -> CenteredBox {
+                        EmptyState(
+                            title = stringResource(R.string.chat_empty_title),
+                            body = stringResource(if (state.online) R.string.chat_empty_body else R.string.chat_empty_body_offline),
+                            art = { ChatEmptyArt(Modifier.width(160.dp)) },
+                        )
+                    }
+                    Phase.Thread -> ThreadList(
+                        rows = state.rows,
+                        local = state.local,
+                        streaming = state.chat.isStreaming,
+                        actions = actions,
+                        haptics = haptics,
+                        listState = listState,
                     )
                 }
             }
         }
-        items(chat.items, key = { it.key }) { item -> ChatItemView(item, onExpand = { vm.expand(item) }) }
-        items(chat.pending, key = { "P:" + it.requestId }) { req ->
-            PendingRequestView(req, answering = req.requestId in state.local.answering, vm = vm)
-        }
-        state.toolQuestion?.question?.let { tq ->
-            item(key = "toolQuestion") {
-                val q = tq.questions.first()
-                QuestionCard(
-                    question = q.question,
-                    header = q.header,
-                    options = q.options.map { DsQuestionOption(it.label, it.description) },
-                    onSubmit = { ans ->
-                        when (ans) {
-                            is QuestionAnswer.Choice -> vm.answerToolQuestion(q, ans.number - 1, null)
-                            is QuestionAnswer.Custom -> vm.answerToolQuestion(q, null, ans.value)
-                        }
-                    },
-                    onSkip = {}
-                )
-            }
-        }
-        if (chat.busy) {
-            item(key = "status") {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)) {
-                    Spinner(size = 14.dp)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        chat.status ?: if (chat.isStreaming) "Escrevendo…" else "Trabalhando…",
-                        style = AiTheme.typography.caption,
-                        color = AiTheme.colors.fg3
-                    )
-                }
-            }
+
+        QueueBar(
+            queue = state.chat.queue,
+            busyIds = state.local.queueBusy,
+            haptics = haptics,
+            onSendNow = vm::sendNow,
+            onRemove = vm::unqueue,
+        )
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
+            ChatComposer(
+                conversationId = conversationId,
+                busy = state.chat.busy,
+                online = state.online,
+                onInterrupt = vm::interrupt,
+                modifier = Modifier.widthIn(max = ThreadMaxWidth).navigationBarsPadding(),
+                initialMention = initialMention,
+            )
         }
     }
-}
 
-@Composable
-private fun ChatItemView(item: ChatItem, onExpand: () -> Unit) {
-    val c = AiTheme.colors
-    when (item) {
-        is ChatItem.User, is ChatItem.Steer -> {
-            val text = if (item is ChatItem.User) item.text else (item as ChatItem.Steer).text
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                Text(
-                    text,
-                    style = AiTheme.typography.body,
-                    color = c.userBubbleFg,
-                    modifier = Modifier
-                        .widthIn(max = 320.dp)
-                        .background(c.userBubble, AiTheme.shapes.lg)
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                )
-            }
-        }
-        is ChatItem.Text -> Text(item.text, style = AiTheme.typography.body, color = c.fg, modifier = Modifier.padding(horizontal = 4.dp))
-        is ChatItem.Thinking -> Text(
-            item.text,
-            style = AiTheme.typography.caption,
-            color = c.fg3,
-            maxLines = 4,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 4.dp)
-        )
-        is ChatItem.Tool -> ToolCard(
-            title = item.name,
-            kind = toolKind(item.name),
-            status = item.status.toDs(),
-            detail = toolDetail(item),
-            meta = if (item.subagent.isNotEmpty()) "${item.subagent.size} passos" else null
-        ) {
-            val out = item.output?.displayText().orEmpty()
-            if (out.isNotBlank()) {
-                Text(out.take(4000), style = AiTheme.typography.mono, color = c.fg2)
-            }
-            if (item.truncated) {
-                AiButton(text = "Ver completo", onClick = onExpand, variant = ButtonVariant.Ghost, size = ButtonSize.Small)
-            }
-        }
-        is ChatItem.Error -> Text(
-            item.message,
-            style = AiTheme.typography.body,
-            color = c.danger,
-            modifier = Modifier.fillMaxWidth().background(c.dangerSoft, AiTheme.shapes.md).padding(10.dp)
-        )
-        is ChatItem.Notice -> Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text(item.text, style = AiTheme.typography.caption, color = c.fg3)
-        }
-    }
-}
-
-@Composable
-private fun PendingRequestView(req: PermissionRequest, answering: Boolean, vm: ChatViewModel) {
-    if (req.isAskUserQuestion && req.questions.isNotEmpty()) {
-        val answers = remember(req.requestId) { mutableStateMapOf<Question, List<String>>() }
-        val next = req.questions.firstOrNull { it !in answers } ?: return
-        // `key` zera a seleção interna do cartão a cada pergunta nova.
-        key(req.requestId, req.questions.indexOf(next)) { QuestionCard(
-            question = next.question,
-            header = next.header,
-            options = next.options.map { DsQuestionOption(it.label, it.description) },
-            onSubmit = { ans ->
-                answers[next] = when (ans) {
-                    is QuestionAnswer.Choice -> listOf(ans.option.label)
-                    is QuestionAnswer.Custom -> listOf(ans.value)
-                }
-                if (req.questions.all { it in answers }) vm.answerQuestion(req, answers.toMap())
+    if (showAgents) AgentsSheet(agents = state.agents, onDismiss = { showAgents = false })
+    if (showRename) {
+        RenameDialog(
+            initial = state.title,
+            busy = state.local.renaming,
+            onConfirm = {
+                vm.rename(it)
+                showRename = false
             },
-            onSkip = { vm.dismissQuestion(req) }
-        ) }
-        return
+            onDismiss = { showRename = false },
+        )
     }
-    PermissionCard(
-        toolName = req.tool,
-        state = PermissionState.Pending,
-        detail = req.inputPreview,
-        description = req.reason,
-        onAllow = { if (!answering) vm.allow(req) },
-        onDeny = { if (!answering) vm.deny(req) },
-        onAlwaysAllow = { if (!answering) vm.allow(req, remember = true) }
+    if (showArchive) {
+        ConfirmDialog(
+            title = stringResource(R.string.chat_archive_title),
+            text = stringResource(R.string.chat_archive_text),
+            confirmLabel = stringResource(R.string.chat_archive_confirm),
+            onConfirm = {
+                showArchive = false
+                vm.archive()
+            },
+            onDismiss = { showArchive = false },
+            dismissLabel = stringResource(R.string.chat_cancel),
+            destructive = true,
+        )
+    }
+}
+
+@Composable
+private fun CenteredBox(content: @Composable () -> Unit) {
+    Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) { content() }
+}
+
+@Composable
+private fun ChatHeader(
+    state: ChatViewModel.UiState,
+    scrolled: Boolean,
+    haptics: AiHaptics,
+    onBack: () -> Unit,
+    onRename: () -> Unit,
+    onArchive: () -> Unit,
+    onOpenFiles: () -> Unit,
+    onAgents: () -> Unit,
+    onRefresh: () -> Unit,
+) {
+    val c = AiTheme.colors
+    val t = AiTheme.typography
+    val conv = state.conversation
+    val status = when {
+        !state.online -> AgentStatus.Offline
+        state.chat.pending.isNotEmpty() -> AgentStatus.Pending
+        state.chat.busy -> AgentStatus.Busy
+        else -> AgentStatus.Online
+    }
+    val statusLabel = stringResource(
+        when (status) {
+            AgentStatus.Offline -> R.string.chat_status_offline
+            AgentStatus.Pending -> R.string.chat_status_pending
+            AgentStatus.Busy -> R.string.chat_status_busy
+            else -> R.string.chat_status_idle
+        },
+    )
+    var menu by remember { mutableStateOf(false) }
+    val runningAgents = state.agents.count { it.running }
+
+    AiStackTopBar(
+        title = state.title,
+        navigationIcon = Lucide.ArrowLeft,
+        navigationContentDescription = stringResource(R.string.chat_back),
+        onNavigationClick = onBack,
+        scrolled = scrolled,
+        haptics = haptics,
+        titleContent = {
+            Column(Modifier.semantics(mergeDescendants = true) {}) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (conv != null) ProviderBadge(conv.providerId, compact = true)
+                    Text(
+                        state.title.ifBlank { stringResource(R.string.chat_untitled) },
+                        style = t.title,
+                        color = c.fg,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false).semantics { heading() },
+                    )
+                    StatusDot(status = status, pulse = status == AgentStatus.Busy && !AiTheme.reducedMotion)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (conv != null) {
+                        val mobile = conv.origin == ConversationOrigin.MOBILE
+                        OriginBadge(
+                            origin = if (mobile) Origin.Mobile else Origin.Desktop,
+                            label = conv.originDevice?.name?.takeIf { mobile } ?: (if (mobile) Origin.Mobile.label else Origin.Desktop.label),
+                        )
+                    }
+                    Text(
+                        listOfNotNull(
+                            statusLabel,
+                            conv?.projectPath?.substringAfterLast('/')?.ifBlank { null },
+                        ).joinToString(" · "),
+                        style = t.caption,
+                        color = c.fg3,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        },
+    ) {
+        Box {
+            AiIconButton(
+                icon = Lucide.Bot,
+                contentDescription = if (runningAgents > 0) {
+                    stringResource(R.string.chat_agents_open_running, runningAgents)
+                } else {
+                    stringResource(R.string.chat_agents_open)
+                },
+                onClick = onAgents,
+                size = 48.dp,
+                tint = if (runningAgents > 0) c.accent else null,
+                haptics = haptics,
+            )
+        }
+        Box {
+            AiIconButton(
+                icon = Lucide.EllipsisVertical,
+                contentDescription = stringResource(R.string.chat_more),
+                onClick = { menu = true },
+                size = 48.dp,
+                haptics = haptics,
+            )
+            DropdownMenu(
+                expanded = menu,
+                onDismissRequest = { menu = false },
+                containerColor = c.surface,
+                shape = AiTheme.shapes.md,
+            ) {
+                MenuItem(Lucide.Pencil, stringResource(R.string.chat_menu_rename)) { menu = false; onRename() }
+                MenuItem(Lucide.FolderOpen, stringResource(R.string.chat_menu_files)) { menu = false; onOpenFiles() }
+                MenuItem(Lucide.Bot, stringResource(R.string.chat_menu_agents)) { menu = false; onAgents() }
+                MenuItem(Lucide.RefreshCw, stringResource(R.string.chat_menu_refresh)) { menu = false; onRefresh() }
+                MenuItem(Lucide.Archive, stringResource(R.string.chat_menu_archive), danger = true) { menu = false; onArchive() }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MenuItem(icon: ImageVector, text: String, danger: Boolean = false, onClick: () -> Unit) {
+    val tone = if (danger) AiTheme.colors.danger else AiTheme.colors.fg
+    DropdownMenuItem(
+        text = { Text(text, style = AiTheme.typography.body, color = tone) },
+        leadingIcon = { Icon(icon, contentDescription = null, tint = tone, modifier = Modifier.size(18.dp)) },
+        onClick = onClick,
     )
 }
 
+/** Faixa de aviso/erro acima da thread; com [onDismiss], um toque a fecha. */
 @Composable
-private fun BottomPanel(state: ChatViewModel.UiState, vm: ChatViewModel) {
-    val c = AiTheme.colors
-    val chat = state.chat
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(c.surface)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+private fun Strip(message: String?, onDismiss: (() -> Unit)?) {
+    var last by remember { mutableStateOf(message.orEmpty()) }
+    if (message != null) last = message
+    AnimatedVisibility(
+        visible = message != null,
+        enter = expandVertically(AiTheme.motion.spring()) + fadeIn(AiTheme.motion.fade()),
+        exit = shrinkVertically(AiTheme.motion.spring()) + fadeOut(AiTheme.motion.fade()),
     ) {
-        if (chat.queue.isNotEmpty()) {
-            Row(
-                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                chat.queue.forEach { q ->
-                    AiChip(text = q.text.take(40), leadingIcon = Lucide.Clock, onRemove = { vm.unqueue(q.id) })
-                }
+        Row(Modifier.fillMaxWidth().background(AiTheme.colors.dangerSoft), verticalAlignment = Alignment.CenterVertically) {
+            ErrorStrip(last, Modifier.weight(1f))
+            if (onDismiss != null) {
+                AiIconButton(
+                    icon = Lucide.X,
+                    contentDescription = stringResource(R.string.chat_dismiss),
+                    onClick = onDismiss,
+                    size = 48.dp,
+                    iconSize = 16.dp,
+                    tint = AiTheme.colors.danger,
+                )
             }
-        }
-        chat.conversation?.let {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                ProviderBadge(providerId = it.providerId, model = it.model, compact = true)
-            }
-        }
-        Row(verticalAlignment = Alignment.Bottom) {
-            AiTextInput(
-                value = state.local.draft,
-                onValueChange = vm::setDraft,
-                placeholder = if (chat.busy) "Mensagem (vai para a fila)" else "Mensagem",
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(Modifier.width(6.dp))
-            if (chat.busy) {
-                AiIconButton(icon = Lucide.CircleStop, contentDescription = "Interromper", onClick = vm::interrupt, tint = c.danger)
-            }
-            AiIconButton(
-                icon = Lucide.Send,
-                contentDescription = if (chat.busy) "Enfileirar" else "Enviar",
-                onClick = vm::send,
-                variant = ButtonVariant.Primary,
-                enabled = state.local.draft.isNotBlank() && !state.local.sending && state.online
-            )
-        }
-        if (chat.busy && state.local.draft.isNotBlank()) {
-            AiButton(
-                text = "Interromper e enviar agora",
-                onClick = vm::sendNow,
-                variant = ButtonVariant.Ghost,
-                size = ButtonSize.Small,
-                enabled = state.online
-            )
         }
     }
 }
 
-private fun ModelToolStatus.toDs(): DsToolStatus = when (this) {
-    ModelToolStatus.RUNNING -> DsToolStatus.Running
-    ModelToolStatus.DONE -> DsToolStatus.Success
-    ModelToolStatus.ERROR -> DsToolStatus.Error
-    ModelToolStatus.INTERRUPTED -> DsToolStatus.Error
+/** Mensagens na fila: tocar envia já (interrompendo o turno); o "x" remove. */
+@Composable
+private fun QueueBar(
+    queue: List<QueuedMessage>,
+    busyIds: Set<String>,
+    haptics: AiHaptics,
+    onSendNow: (QueuedMessage) -> Unit,
+    onRemove: (String) -> Unit,
+) {
+    AnimatedVisibility(
+        visible = queue.isNotEmpty(),
+        enter = expandVertically(AiTheme.motion.spring()) + fadeIn(AiTheme.motion.fade()),
+        exit = shrinkVertically(AiTheme.motion.spring()) + fadeOut(AiTheme.motion.fade()),
+    ) {
+        Column(Modifier.fillMaxWidth().padding(top = 6.dp)) {
+            Text(
+                stringResource(R.string.chat_queue_hint, queue.size),
+                style = AiTheme.typography.caption,
+                color = AiTheme.colors.fg3,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                queue.forEach { q ->
+                    val busy = q.id in busyIds
+                    val label = q.text.lineSequence().firstOrNull { it.isNotBlank() }?.take(48)
+                        ?: stringResource(R.string.chat_queue_attachments, q.attachments.size)
+                    AiChip(
+                        text = label,
+                        onClick = if (busy) null else ({ onSendNow(q) }),
+                        leading = {
+                            if (busy) Spinner(size = 12.dp) else Icon(Lucide.Clock, null, Modifier.size(14.dp), tint = AiTheme.colors.fg3)
+                        },
+                        onRemove = if (busy) null else ({ onRemove(q.id) }),
+                        haptics = haptics,
+                    )
+                }
+                Spacer(Modifier.width(4.dp))
+            }
+        }
+    }
 }
 
-private fun toolKind(name: String): ToolKind = when (name) {
-    "Read", "Glob", "LS", "read_file", "list_dir" -> ToolKind.File
-    "Edit", "MultiEdit", "Write", "NotebookEdit", "apply_patch", "edit_file", "write_file" -> ToolKind.Edit
-    "Bash", "shell", "run_shell_command", "exec_command" -> ToolKind.Terminal
-    "Grep", "search", "grep" -> ToolKind.Search
-    "WebFetch", "WebSearch", "web_search", "web_fetch" -> ToolKind.Web
-    "Task", "Agent" -> ToolKind.Agent
-    "TodoWrite", "update_plan" -> ToolKind.Todo
-    else -> ToolKind.Tool
-}
-
-private fun toolDetail(item: ChatItem.Tool): String? {
-    val o = item.input.asObj() ?: return null
-    return o.str("command") ?: o.str("file_path") ?: o.str("path") ?: o.str("pattern")
-        ?: o.str("url") ?: o.str("query") ?: o.str("description")
+@Composable
+private fun RenameDialog(initial: String, busy: Boolean, onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
+    val c = AiTheme.colors
+    var text by rememberSaveable { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = c.surface,
+        title = { Text(stringResource(R.string.chat_rename_title), style = AiTheme.typography.title, color = c.fg) },
+        text = {
+            AiTextInput(
+                value = text,
+                onValueChange = { text = it },
+                placeholder = stringResource(R.string.chat_rename_placeholder),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            AiButton(
+                text = stringResource(R.string.chat_rename_confirm),
+                onClick = { onConfirm(text) },
+                enabled = text.isNotBlank() && !busy,
+            )
+        },
+        dismissButton = {
+            AiButton(text = stringResource(R.string.chat_cancel), onClick = onDismiss, variant = ButtonVariant.Ghost)
+        },
+    )
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ilustração do chat vazio (camada de destaque, tingida com a cor de acento). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="120dp"
+    android:viewportWidth="160"
+    android:viewportHeight="120">
+    <!-- brilho -->
+    <path android:fillColor="#000000"
+        android:pathData="M130,14l2.6,6.4l6.4,2.6l-6.4,2.6l-2.6,6.4l-2.6,-6.4l-6.4,-2.6l6.4,-2.6z" />
+    <path android:fillColor="#000000" android:fillAlpha="0.6"
+        android:pathData="M146,38l1.5,3.5l3.5,1.5l-3.5,1.5l-1.5,3.5l-1.5,-3.5l-3.5,-1.5l3.5,-1.5z" />
+    <!-- cursor de digitação -->
+    <path android:fillColor="#000000"
+        android:pathData="M70,48h4v6h-4z" />
+    <!-- ponto de status no balão do usuário -->
+    <path android:fillColor="#000000" android:fillAlpha="0.85"
+        android:pathData="M128,79m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+</vector>
