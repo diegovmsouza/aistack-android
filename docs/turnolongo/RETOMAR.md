@@ -6,9 +6,9 @@ Sobrescreva antes de cada pausa e ao trocar de assunto (até 60 linhas). Regras:
 
 ## Agora
 - Assunto ativo: app Android completo (mesma sessão; spec em `docs/spec/`, plano normativo em `00-plano.md`).
-- Estado em 1 linha: Onda 1 RETOMADA (run `wf_356ac38d-b19`, script `scratchpad/onda1b.js`): A1 core + A2 design + D1 host (worktree `AiStack/worktrees/mobile`). `05-contrato-v2.md` pronto (C0; decisões em `scratchpad/c0.json`). Usuário dormindo com carta branca (commit, push, build, instalar, testar) desde 21:07.
-- Próximo passo exato: ao terminar, ler o journal (`.../subagents/workflows/wf_356ac38d-b19/journal.jsonl`), conferir `./gradlew assembleDebug testDebugUnitTest` e `cargo test` do worktree → workflow Onda 2 (F1–F5, 00-plano §5) → Onda 3 (emulador, E2E, capturas, revisão).
-- Se o workflow morrer: `Workflow({scriptPath: "<scratchpad>/onda1b.js", resumeFromRunId: "wf_356ac38d-b19"})`.
+- Estado em 1 linha: Onda 1 CONCLUÍDA e commitada (Android main até b708046; desktop `feat/mobile-companion` 1e644f8, cargo 115+4 testes e tsc verdes). Onda 2 RODANDO: run `wf_4f857885-b0b` (script `scratchpad/onda2.js`, F1–F5, contrato em `docs/spec/CONTRATO-ONDA2.md`).
+- Próximo passo exato: ao terminar, ler o journal (`.../subagents/workflows/wf_4f857885-b0b/journal.jsonl`), `./gradlew --stop`, conferir `assembleDebug testDebugUnitTest`, commitar por feature e dar push → Onda 3 (emulador, E2E isolado com AISTACK_HOME, capturas claro/escuro, revisão).
+- Se o workflow morrer: `Workflow({scriptPath: "<scratchpad>/onda2.js", resumeFromRunId: "wf_4f857885-b0b"})`.
 
 ## Pedido do usuário (resumo fiel)
 App Android bonito, com animações, SVG obrigatório para imagens; todos os recursos do AiStack: sessões do desktop (ler/interagir), iniciar sessão no celular (aparece na sidebar do desktop com ícone de celular no topo, controle total no desktop), notificações em tempo real de tarefas e pendências pareadas, sub-agentes, comandos de barra, explorador de arquivos, câmera, microfone. Pareamento atual funciona: preservar. Testar no emulador Pixel_10_Pro_XL (emulator-5554 já ligado). Máx. 5 agentes, effort ≤ high.
@@ -17,8 +17,9 @@ App Android bonito, com animações, SVG obrigatório para imagens; todos os rec
 - [x] turno longo: SUSPENSO (livre, 20:46) e vigia removido a pedido do usuário — trabalhar direto, sem pausas
 - [x] Entender (01–04)
 - [x] Plano (00-plano.md)
-- [~] Onda 1 (contrato, core, design, host)
-- [ ] Desktop: worktree separado no AiStack (há alteração alheia em `src-tauri/src/window_persistence.rs` — não tocar)
+- [x] Onda 1 (contrato, core, design, host) — commitada
+- [~] Onda 2 (telas F1–F5)
+- [x] Desktop: worktree separado no AiStack (há alteração alheia em `src-tauri/src/window_persistence.rs` — não tocar)
 - [ ] Android: implementação, build, instalação e testes no emulador
 
 ## Riscos e armadilhas
