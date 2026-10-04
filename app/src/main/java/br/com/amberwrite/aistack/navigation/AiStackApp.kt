@@ -42,6 +42,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import br.com.amberwrite.aistack.AiStackApplication
@@ -86,7 +87,11 @@ private const val MENTION_KEY = "pendingMention"
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun AiStackApp(deepLink: Uri?, onDeepLinkConsumed: () -> Unit) {
+fun AiStackApp(
+    deepLink: Uri?,
+    onDeepLinkConsumed: () -> Unit,
+    onPairRouteChange: (Boolean) -> Unit = {},
+) {
     val container = AiStackApplication.container(LocalContext.current)
     val nav = rememberNavController()
     val link by container.pairingStore.link.collectAsStateWithLifecycle()
@@ -312,6 +317,9 @@ fun AiStackApp(deepLink: Uri?, onDeepLinkConsumed: () -> Unit) {
             onDeepLinkConsumed()
         }
 
+        val route = nav.currentBackStackEntryAsState().value?.destination?.route
+        LaunchedEffect(route) { if (route != null) onPairRouteChange(route == Routes.PAIR) }
+
         // Despareado aqui ou revogado no desktop: volta para o pareamento e limpa a pilha.
         LaunchedEffect(link) {
             if (link == null) {
@@ -421,8 +429,12 @@ private fun popExitSpec(motion: AiStackMotion): AnimatedContentTransitionScope<N
     fadeOut(motion.exit()) + slideOutHorizontally(motion.exit()) { it / 12 }
 }
 
-/** Vai para o pareamento descartando toda a pilha. */
+/**
+ * Vai para o pareamento descartando toda a pilha. Já estando nele, não recria o destino:
+ * uma entrada nova teria outro ViewModel, e o pareamento em curso ficaria órfão na tela.
+ */
 private fun NavHostController.goToPair() {
+    if (currentDestination?.route == Routes.PAIR) return
     navigate(Routes.PAIR) {
         popUpTo(graph.id) { inclusive = true }
         launchSingleTop = true

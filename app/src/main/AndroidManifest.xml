@@ -58,6 +58,17 @@
                     android:host="pair" />
             </intent-filter>
 
+            <!-- O link que o desktop mostra/copia: https://aistack.amberwrite.com.br/pair?... -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="aistack.amberwrite.com.br"
+                    android:path="/pair" />
+            </intent-filter>
+
             <!-- Abre uma conversa (notificações): aistack://chat/{id} -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

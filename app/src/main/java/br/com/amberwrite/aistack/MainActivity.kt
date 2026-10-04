@@ -50,6 +50,8 @@ class MainActivity : ComponentActivity() {
             val settings by container.settingsStore.settings.collectAsStateWithLifecycle()
             val materialYou by container.settingsStore.materialYou.collectAsStateWithLifecycle()
             val link by container.pairingStore.link.collectAsStateWithLifecycle()
+            // A explicação só aparece depois do pareamento, fora da tela de parear.
+            var onPairRoute by remember { mutableStateOf(true) }
             var askNotifications by remember {
                 mutableStateOf(needsNotificationPermission() && !container.settingsStore.notificationRationaleDismissed)
             }
@@ -59,8 +61,12 @@ class MainActivity : ComponentActivity() {
                 else -> isSystemInDarkTheme()
             }
             AiStackTheme(darkTheme = dark, dynamicColor = materialYou) {
-                AiStackApp(deepLink = deepLink, onDeepLinkConsumed = { deepLink = null })
-                if (askNotifications && link != null) {
+                AiStackApp(
+                    deepLink = deepLink,
+                    onDeepLinkConsumed = { deepLink = null },
+                    onPairRouteChange = { onPairRoute = it },
+                )
+                if (askNotifications && link != null && !onPairRoute) {
                     NotificationRationaleDialog(
                         onAllow = {
                             askNotifications = false
