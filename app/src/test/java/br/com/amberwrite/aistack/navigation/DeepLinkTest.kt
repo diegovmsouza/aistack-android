@@ -1,6 +1,7 @@
 package br.com.amberwrite.aistack.navigation
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -16,8 +17,31 @@ class DeepLinkTest {
     @Test
     fun chat() {
         assertEquals(DeepLink.Chat("c1"), DeepLink.parse("aistack://chat/c1"))
-        assertEquals(DeepLink.Chat("a b"), DeepLink.parse("aistack://chat/a%20b?x=1"))
+        assertEquals(DeepLink.Chat("a-b"), DeepLink.parse("aistack://chat/a%2Db?x=1"))
+        assertEquals(
+            DeepLink.Chat("6f1c2a9e-0d1b-4c8e-9a51-2f0e7b3c4d5a"),
+            DeepLink.parse("aistack://chat/6f1c2a9e-0d1b-4c8e-9a51-2f0e7b3c4d5a/")
+        )
         assertNull(DeepLink.parse("aistack://chat/"))
+    }
+
+    @Test
+    fun chatComIdInvalidoEhIgnorado() {
+        assertNull(DeepLink.parse("aistack://chat/a%20b"))
+        assertNull(DeepLink.parse("aistack://chat/..%2F..%2Fsettings"))
+        assertNull(DeepLink.parse("aistack://chat/a%2Fb"))
+        assertNull(DeepLink.parse("aistack://chat/" + "x".repeat(200)))
+        assertNull(DeepLink.parse("aistack://chat/%E0%A4%A"))
+    }
+
+    @Test
+    fun validacaoDeId() {
+        assertTrue(DeepLink.isValidConversationId("conv_01:abc.def-9"))
+        assertFalse(DeepLink.isValidConversationId(null))
+        assertFalse(DeepLink.isValidConversationId(""))
+        assertFalse(DeepLink.isValidConversationId(".."))
+        assertFalse(DeepLink.isValidConversationId("a\nb"))
+        assertFalse(DeepLink.isValidConversationId("ação"))
     }
 
     @Test

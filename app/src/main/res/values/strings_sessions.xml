@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sessions_title">Conversas</string>
+    <string name="sessions_search_placeholder">Buscar conversas</string>
+    <string name="sessions_search_clear">Limpar busca</string>
+    <string name="sessions_filter_all">Todos os projetos</string>
+    <string name="sessions_filter_archived">Arquivadas</string>
+    <string name="sessions_group_today">Hoje</string>
+    <string name="sessions_group_yesterday">Ontem</string>
+    <string name="sessions_group_week">Últimos 7 dias</string>
+    <string name="sessions_group_older">Antes</string>
+    <string name="sessions_new">Nova sessão</string>
+    <string name="sessions_pending_cd">Pendências</string>
+    <plurals name="sessions_pending_count_cd">
+        <item quantity="one">%d pendência aberta</item>
+        <item quantity="other">%d pendências abertas</item>
+    </plurals>
+    <string name="sessions_settings_cd">Configurações</string>
+    <string name="sessions_status_busy">Trabalhando</string>
+    <string name="sessions_status_pending">Aguardando você</string>
+    <plurals name="sessions_status_pending_count">
+        <item quantity="one">%d permissão aguardando</item>
+        <item quantity="other">%d permissões aguardando</item>
+    </plurals>
+    <string name="sessions_archived_tag">Arquivada</string>
+    <string name="sessions_swipe_archive">Arquivar</string>
+    <string name="sessions_swipe_unarchive">Desarquivar</string>
+    <string name="sessions_swipe_rename">Renomear</string>
+    <string name="sessions_rename_title">Renomear conversa</string>
+    <string name="sessions_rename_placeholder">Novo título</string>
+    <string name="sessions_rename_confirm">Salvar</string>
+    <string name="sessions_cancel">Cancelar</string>
+    <string name="sessions_archived_notice">“%1$s” arquivada</string>
+    <string name="sessions_unarchived_notice">“%1$s” voltou para a lista</string>
+    <string name="sessions_undo">Desfazer</string>
+    <string name="sessions_empty_title">Nenhuma conversa ainda</string>
+    <string name="sessions_empty_body">Comece uma sessão aqui ou no desktop. Ela aparece nesta lista na hora.</string>
+    <string name="sessions_no_results_title">Nada encontrado</string>
+    <string name="sessions_no_results_body">Nenhuma conversa casa com a busca ou o filtro de projeto.</string>
+    <string name="sessions_clear_filters">Limpar filtros</string>
+    <string name="sessions_offline_title">Sem conexão com o desktop</string>
+    <string name="sessions_offline_body">As conversas aparecem assim que o desktop voltar a responder.</string>
+    <string name="sessions_error_title">Não foi possível carregar</string>
+    <string name="sessions_retry">Tentar de novo</string>
+    <string name="sessions_loading_cd">Carregando conversas</string>
+    <string name="sessions_detail_empty_title">Escolha uma conversa</string>
+    <string name="sessions_detail_empty_body">Ela abre aqui, ao lado da lista.</string>
+    <string name="sessions_open_cd">Abrir conversa %1$s</string>
+    <string name="sessions_from_mobile">Celular</string>
+</resources>

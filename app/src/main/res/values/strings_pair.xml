@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pair_screen_title">Parear com o desktop</string>
+    <string name="pair_back_cd">Voltar</string>
+    <string name="pair_brand_cd">Marca do AiStack</string>
+    <string name="pair_hero_title">Conecte ao seu desktop</string>
+    <string name="pair_hero_body">O celular conversa com o AiStack do computador por um canal cifrado de ponta a ponta. Só leva alguns segundos.</string>
+    <string name="pair_step1">Abra o AiStack no computador.</string>
+    <string name="pair_step2">Vá em Configurações › Acesso remoto.</string>
+    <string name="pair_step3">Mostre o QR de pareamento e leia com este celular.</string>
+    <string name="pair_scan">Ler QR code</string>
+    <string name="pair_paste_toggle">Colar link de pareamento</string>
+    <string name="pair_paste_hide">Esconder campo do link</string>
+    <string name="pair_paste_label">Link de pareamento</string>
+    <string name="pair_paste_placeholder">aistack://pair?relay=…</string>
+    <string name="pair_submit">Parear</string>
+    <string name="pair_error_invalid">Isso não parece um link de pareamento do AiStack.</string>
+    <string name="pair_error_missing_code">Este link não tem o código de pareamento. Gere um QR novo no desktop.</string>
+    <string name="pair_device_name">Este aparelho aparecerá no desktop como “%1$s”.</string>
+    <string name="pair_already_paired">Este celular já está pareado. Parear de novo substitui o desktop atual.</string>
+
+    <string name="pair_repair_title">Parear com outro desktop?</string>
+    <string name="pair_repair_text">Este celular já está pareado. Continuar troca o pareamento atual pelo do link recebido (relay %1$s).</string>
+    <string name="pair_repair_confirm">Parear</string>
+    <string name="pair_cancel">Cancelar</string>
+
+    <string name="pair_stage_relay">Relay</string>
+    <string name="pair_stage_keys">Chaves</string>
+    <string name="pair_stage_desktop">Desktop</string>
+    <string name="pair_stage_cd">Etapa %1$d de 3, %2$s: %3$s</string>
+    <string name="pair_stage_done">concluída</string>
+    <string name="pair_stage_active">em andamento</string>
+    <string name="pair_stage_pending">pendente</string>
+    <string name="pair_stage_failed">falhou</string>
+
+    <string name="pair_phase_connecting">Conectando ao relay…</string>
+    <string name="pair_phase_connecting_attempt">Conectando ao relay… (tentativa %1$d)</string>
+    <string name="pair_phase_handshaking">Trocando chaves com o desktop…</string>
+    <string name="pair_phase_verifying">Aguardando o desktop confirmar…</string>
+    <string name="pair_phase_success">Pareado!</string>
+    <string name="pair_phase_rejected">Código recusado</string>
+    <string name="pair_phase_offline">Desktop offline</string>
+    <string name="pair_phase_failed">Não foi possível conectar</string>
+
+    <string name="pair_hint_progress">Confirme no desktop se ele pedir. O código vale por 10 minutos e só pode ser usado uma vez.</string>
+    <string name="pair_hint_success">Tudo pronto. Abrindo suas sessões…</string>
+    <string name="pair_hint_rejected">O código expirou, já foi usado ou o desktop recusou. Gere um novo QR no desktop e tente de novo.</string>
+    <string name="pair_hint_offline">O relay respondeu, mas o AiStack do desktop não está aberto ou está sem internet.</string>
+    <string name="pair_retry_in">Nova tentativa em %1$d s</string>
+
+    <string name="pair_scan_again">Ler outro QR</string>
+    <string name="pair_retry_now">Tentar agora</string>
+    <string name="pair_retry">Tentar de novo</string>
+    <string name="pair_success_cd">Pareamento concluído</string>
+    <string name="pair_failure_cd">Falha no pareamento</string>
+    <string name="pair_progress_cd">Pareamento em andamento</string>
+
+    <string name="nav_detail_back_cd">Fechar conversa</string>
+</resources>
