@@ -206,7 +206,7 @@ fun SlashPalette(
         key = { it.key },
         haptics = haptics,
     ) { item, highlighted ->
-        PaletteItemRow(item.copy(icon = item.icon ?: Lucide.Slash), highlighted, query = query, prefix = "/", monoTitle = true)
+        PaletteItemRow(item.copy(icon = null), highlighted, query = query, prefix = "/", monoTitle = true)
     }
 }
 

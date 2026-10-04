@@ -134,9 +134,7 @@ private fun SlashPanel(
 ) {
     val c = AiTheme.colors
     GlassCard(Modifier.fillMaxWidth(), shape = AiTheme.shapes.lg, contentPadding = PaddingValues(6.dp)) {
-        PanelHeader(stringResource(R.string.composer_slash_title), onDismiss) {
-            Icon(Lucide.Slash, null, Modifier.size(14.dp), tint = c.accent)
-        }
+        PanelHeader(stringResource(R.string.composer_slash_title), onDismiss) {}
         LoadContent(p.items, onRetry) { list ->
             if (list.isEmpty()) {
                 PanelEmpty(
@@ -153,7 +151,6 @@ private fun SlashPanel(
                             key = cmd.name,
                             title = cmd.bareName,
                             subtitle = cmd.description?.takeIf { it.isNotBlank() },
-                            icon = Lucide.Slash,
                             badge = if (cmd.desktopOnly) desktopOnly else cmd.source?.takeIf { it.isNotBlank() && it != "builtin" },
                         )
                         RowContainer(
