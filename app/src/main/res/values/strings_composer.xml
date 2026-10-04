@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Campo de texto -->
+    <string name="composer_placeholder">Mensagem… use / para comandos e @ para arquivos</string>
+    <string name="composer_placeholder_busy">Escreva para pôr na fila…</string>
+    <string name="composer_placeholder_listening">Ouvindo… fale agora</string>
+    <string name="composer_placeholder_offline">Sem conexão. O rascunho fica guardado.</string>
+    <string name="composer_field_desc">Mensagem para o assistente</string>
+
+    <!-- Envio -->
+    <string name="composer_send">Enviar mensagem</string>
+    <string name="composer_queue">Pôr na fila</string>
+    <string name="composer_send_now">Enviar agora, interrompendo o turno</string>
+    <string name="composer_interrupt">Interromper resposta</string>
+
+    <!-- Avisos -->
+    <string name="composer_notice_close">Fechar aviso</string>
+    <string name="composer_notice_desktop_only">O comando %1$s só funciona no desktop.</string>
+    <string name="composer_notice_file_too_large">%1$s passa de 6 MB e não pode ser anexado.</string>
+    <string name="composer_notice_too_many">Limite de %1$d anexos por mensagem.</string>
+    <string name="composer_notice_no_recognizer">Nenhum reconhecimento de voz disponível neste aparelho. Instale ou ative o app Google ou outro serviço de ditado.</string>
+    <string name="composer_notice_mic_denied">Sem acesso ao microfone, o ditado não funciona.</string>
+    <string name="composer_notice_camera_denied">Sem acesso à câmera. Você ainda pode anexar da galeria.</string>
+    <string name="composer_notice_dictation_network">O ditado precisa de internet. Verifique a conexão.</string>
+    <string name="composer_notice_dictation_busy">O reconhecimento de voz está ocupado. Tente de novo em instantes.</string>
+    <string name="composer_notice_dictation_failed">Não entendi o que foi dito. Tente de novo.</string>
+    <string name="composer_no_file_picker">Nenhum seletor de arquivos disponível.</string>
+
+    <!-- Anexos -->
+    <string name="composer_attach_open">Abrir opções de anexo</string>
+    <string name="composer_attach_close">Fechar opções de anexo</string>
+    <string name="composer_attach_camera">Câmera</string>
+    <string name="composer_attach_gallery">Galeria</string>
+    <string name="composer_attach_file">Arquivo</string>
+    <string name="composer_attachment_preparing">Preparando…</string>
+    <string name="composer_attachment_uploading">Enviando…</string>
+    <string name="composer_attachment_failed">Falhou · toque para tentar</string>
+    <string name="composer_attachment_desc">Anexo %1$s, %2$s</string>
+    <string name="composer_default_image_name">imagem.jpg</string>
+    <string name="composer_default_file_name">arquivo</string>
+
+    <!-- Microfone -->
+    <string name="composer_mic_start">Ditar mensagem</string>
+    <string name="composer_mic_stop">Parar ditado</string>
+    <string name="composer_mic_permission_title">Microfone</string>
+    <string name="composer_mic_permission_text">Para ditar a mensagem, o AiStack precisa ouvir o microfone enquanto você fala. O áudio vai só para o reconhecimento de voz do aparelho.</string>
+    <string name="composer_mic_permission_settings">O acesso ao microfone foi negado. Ative-o nos ajustes do app para usar o ditado.</string>
+
+    <!-- Câmera -->
+    <string name="composer_camera_permission_title">Câmera</string>
+    <string name="composer_camera_permission_text">Para tirar uma foto e anexá-la à conversa, o AiStack precisa acessar a câmera.</string>
+    <string name="composer_camera_permission_settings">O acesso à câmera foi negado. Ative-o nos ajustes do app para fotografar.</string>
+    <string name="composer_camera_starting">Abrindo a câmera…</string>
+    <string name="composer_camera_failed">Não foi possível abrir a câmera.</string>
+    <string name="composer_camera_capture_failed">Não foi possível tirar a foto. Tente de novo.</string>
+    <string name="composer_camera_close">Fechar câmera</string>
+    <string name="composer_camera_flash_off">Flash desligado</string>
+    <string name="composer_camera_flash_auto">Flash automático</string>
+    <string name="composer_camera_flash_on">Flash ligado</string>
+    <string name="composer_camera_flash_desc">%1$s. Toque para trocar.</string>
+    <string name="composer_camera_shutter">Tirar foto</string>
+    <string name="composer_camera_switch_back">Usar câmera traseira</string>
+    <string name="composer_camera_switch_front">Usar câmera frontal</string>
+    <string name="composer_camera_review_desc">Foto tirada</string>
+    <string name="composer_camera_retake">Repetir</string>
+    <string name="composer_camera_use">Usar foto</string>
+
+    <!-- Permissões -->
+    <string name="composer_permission_continue">Continuar</string>
+    <string name="composer_permission_not_now">Agora não</string>
+    <string name="composer_permission_open_settings">Abrir ajustes</string>
+
+    <!-- Painéis «/» e «@» -->
+    <string name="composer_popup_close">Fechar sugestões</string>
+    <string name="composer_retry">Tentar de novo</string>
+    <string name="composer_state_unavailable">Indisponível</string>
+    <string name="composer_slash_title">Comandos</string>
+    <string name="composer_slash_empty_title">Nenhum comando</string>
+    <string name="composer_slash_empty_body_none">Este agente não informou comandos.</string>
+    <string name="composer_slash_empty_body">Nada começa com «/%1$s».</string>
+    <string name="composer_desktop_only">só no desktop</string>
+    <string name="composer_mention_title_root">Arquivos do projeto</string>
+    <string name="composer_mention_title_dir">Em %1$s</string>
+    <string name="composer_mention_up">Voltar à pasta anterior</string>
+    <string name="composer_mention_empty_title">Nada por aqui</string>
+    <string name="composer_mention_empty_body_dir">Esta pasta está vazia.</string>
+    <string name="composer_mention_empty_body">Nenhum arquivo começa com «%1$s».</string>
+    <string name="composer_mention_truncated">Mostrando os primeiros itens. Digite para filtrar.</string>
+
+    <!-- Modelo e esforço -->
+    <string name="composer_model_default">Modelo padrão</string>
+    <string name="composer_model_chip_desc">Modelo: %1$s. Toque para trocar.</string>
+    <string name="composer_effort_chip_desc">Esforço: %1$s. Toque para trocar.</string>
+    <string name="composer_options_title">Modelo e esforço</string>
+    <string name="composer_options_model">Modelo</string>
+    <string name="composer_options_effort">Esforço de raciocínio</string>
+    <string name="composer_options_effort_pick_model">Escolha um modelo para ajustar o esforço.</string>
+    <string name="composer_options_effort_none">Este modelo não tem níveis de esforço.</string>
+    <string name="composer_options_empty_title">Nenhum modelo</string>
+    <string name="composer_options_empty_body">O agente não informou modelos disponíveis.</string>
+    <string name="composer_options_default">padrão</string>
+</resources>
