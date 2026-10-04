@@ -1,32 +1,38 @@
 package br.com.amberwrite.aistack.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import br.com.amberwrite.aistack.ui.designsystem.tokens.DarkTokens
 
-// Paleta AiStack Dark (Grafite profundo + Papel escuro)
-val AiStackBg = Color(0xFF121316)
-val AiStackSurface = Color(0xFF1A1B1E)
-val AiStackSurface2 = Color(0xFF222429)
-val AiStackSurface3 = Color(0xFF2B2D33)
-val AiStackLine = Color(0x1FFFFFFF)
-val AiStackLineStrong = Color(0x33FFFFFF)
+/*
+ * Constantes legadas (tema escuro fixo) mantidas para as telas antigas. Os valores agora
+ * vêm dos tokens do design system (oklch do desktop convertido). Código novo deve usar
+ * `AiTheme.colors` de br.com.amberwrite.aistack.ui.designsystem, que segue claro/escuro.
+ */
 
-val AiStackFg = Color(0xFFF4F4F6)
-val AiStackFg2 = Color(0xFFA0A2AB)
-val AiStackFg3 = Color(0xFF6F717B)
+val AiStackBg = DarkTokens.Bg
+val AiStackSurface = DarkTokens.Surface
+val AiStackSurface2 = DarkTokens.Surface2
+val AiStackSurface3 = DarkTokens.Surface3
+val AiStackLine = DarkTokens.Line
+val AiStackLineStrong = DarkTokens.LineStrong
 
-// Cores Oficiais dos Provedores
-val ProviderClaude = Color(0xFFD97757)
-val ProviderCodex = Color(0xFFE5E7EB)
-val ProviderAgy = Color(0xFF38BDF8)
-val ProviderKimi = Color(0xFF027AFF)
-val ProviderDeepSeek = Color(0xFF4D6BFE)
-val ProviderGlm = Color(0xFF1F54FE)
-val ProviderQwen = Color(0xFF615CED)
+val AiStackFg = DarkTokens.Fg
+val AiStackFg2 = DarkTokens.Fg2
+val AiStackFg3 = DarkTokens.Fg3
+
+// Cores dos provedores (variante escura dos tokens do desktop).
+val ProviderClaude = DarkTokens.Claude
+val ProviderCodex = DarkTokens.Codex
+val ProviderAgy = DarkTokens.Agy
+val ProviderKimi = DarkTokens.Kimi
+val ProviderDeepSeek = DarkTokens.DeepSeek
+val ProviderGlm = DarkTokens.Glm
+val ProviderQwen = DarkTokens.Qwen
 
 // Status
-val StatusOk = Color(0xFF22C55E)
-val StatusWarn = Color(0xFFF59E0B)
-val StatusDanger = Color(0xFFEF4444)
+val StatusOk = DarkTokens.Ok
+val StatusWarn = DarkTokens.Warn
+val StatusDanger = DarkTokens.Danger
 val DiffAdd = Color(0xFF166534)
 val DiffAddFg = Color(0xFF86EFAC)
 val DiffDelete = Color(0xFF7F1D1D)

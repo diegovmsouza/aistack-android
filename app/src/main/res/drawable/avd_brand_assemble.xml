@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Animação de abertura da marca: os três quadrados saem empilhados do centro e se abrem com ease-out (0.16, 1, 0.3, 1); as interseções (multiply pré-calculado) surgem ao final para não ficarem erradas durante o movimento. -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="48dp"
+            android:height="48dp"
+            android:viewportWidth="1024"
+            android:viewportHeight="1024">
+            <group
+                android:name="claude"
+                android:pivotX="392"
+                android:pivotY="392">
+                <path
+                    android:name="claude_shape"
+                    android:fillColor="#FFE0845A"
+                    android:fillAlpha="0"
+                    android:pathData="M272,152H512A120,120 0,0 1,632,272V512A120,120 0,0 1,512,632H272A120,120 0,0 1,152,512V272A120,120 0,0 1,272,152Z" />
+            </group>
+            <group
+                android:name="codex"
+                android:pivotX="512"
+                android:pivotY="512">
+                <path
+                    android:name="codex_shape"
+                    android:fillColor="#FFE8E9EC"
+                    android:fillAlpha="0"
+                    android:pathData="M392,272H632A120,120 0,0 1,752,392V632A120,120 0,0 1,632,752H392A120,120 0,0 1,272,632V392A120,120 0,0 1,392,272Z" />
+            </group>
+            <group
+                android:name="gemini"
+                android:pivotX="632"
+                android:pivotY="632">
+                <path
+                    android:name="gemini_shape"
+                    android:fillColor="#FF6E9BF5"
+                    android:fillAlpha="0"
+                    android:pathData="M512,392H752A120,120 0,0 1,872,512V752A120,120 0,0 1,752,872H512A120,120 0,0 1,392,752V512A120,120 0,0 1,512,392Z" />
+            </group>
+            <path
+                android:name="overlap_cx"
+                android:fillColor="#FFCC7953"
+                android:fillAlpha="0"
+                android:pathData="M392,272H632V512A120,120 0,0 1,512,632H272V392A120,120 0,0 1,392,272Z" />
+            <path
+                android:name="overlap_xg"
+                android:fillColor="#FF648EE3"
+                android:fillAlpha="0"
+                android:pathData="M512,392H752V632A120,120 0,0 1,632,752H392V512A120,120 0,0 1,512,392Z" />
+            <path
+                android:name="overlap_cxg"
+                android:fillColor="#FF584950"
+                android:fillAlpha="0"
+                android:pathData="M512,392H632V512A120,120 0,0 1,512,632H392V512A120,120 0,0 1,512,392Z" />
+        </vector>
+    </aapt:attr>
+    <target android:name="claude">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="620"
+                android:propertyName="scaleX"
+                android:startOffset="0"
+                android:valueFrom="0.55"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            <objectAnimator
+                android:duration="620"
+                android:propertyName="scaleY"
+                android:startOffset="0"
+                android:valueFrom="0.55"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            <objectAnimator
+                android:duration="720"
+                android:propertyName="translateX"
+                android:startOffset="0"
+                android:valueFrom="120"
+                android:valueTo="0"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            <objectAnimator
+                android:duration="720"
+                android:propertyName="translateY"
+                android:startOffset="0"
+                android:valueFrom="120"
+                android:valueTo="0"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="claude_shape">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="260"
+                android:propertyName="fillAlpha"
+                android:startOffset="0"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="codex">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="620"
+                android:propertyName="scaleX"
+                android:startOffset="70"
+                android:valueFrom="0.55"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            <objectAnimator
+                android:duration="620"
+                android:propertyName="scaleY"
+                android:startOffset="70"
+                android:valueFrom="0.55"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="codex_shape">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="260"
+                android:propertyName="fillAlpha"
+                android:startOffset="70"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="gemini">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="620"
+                android:propertyName="scaleX"
+                android:startOffset="140"
+                android:valueFrom="0.55"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            <objectAnimator
+                android:duration="620"
+                android:propertyName="scaleY"
+                android:startOffset="140"
+                android:valueFrom="0.55"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            <objectAnimator
+                android:duration="720"
+                android:propertyName="translateX"
+                android:startOffset="140"
+                android:valueFrom="-120"
+                android:valueTo="0"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            <objectAnimator
+                android:duration="720"
+                android:propertyName="translateY"
+                android:startOffset="140"
+                android:valueFrom="-120"
+                android:valueTo="0"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="gemini_shape">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="260"
+                android:propertyName="fillAlpha"
+                android:startOffset="140"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="overlap_cx">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="280"
+                android:propertyName="fillAlpha"
+                android:startOffset="620"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="overlap_xg">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="280"
+                android:propertyName="fillAlpha"
+                android:startOffset="660"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="overlap_cxg">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+            <objectAnimator
+                android:duration="280"
+                android:propertyName="fillAlpha"
+                android:startOffset="700"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType">
+                <aapt:attr name="android:interpolator">
+                    <pathInterpolator
+                        android:controlX1="0.16"
+                        android:controlY1="1"
+                        android:controlX2="0.3"
+                        android:controlY2="1" />
+                </aapt:attr>
+            </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

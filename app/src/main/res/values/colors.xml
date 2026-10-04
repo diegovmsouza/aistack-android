@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cores de janela/sistema (fora do Compose). Espelham AiStackColors.bg/accent;
+     a fonte de verdade continua sendo ui/designsystem/tokens/ColorTokens.kt. -->
+<resources>
+    <color name="aistack_bg">#FFFBFAF7</color>
+    <color name="aistack_surface">#FFFFFFFF</color>
+    <color name="aistack_fg">#FF1A1510</color>
+    <color name="aistack_accent">#FFD6673F</color>
+    <color name="aistack_splash_bg">#FF141417</color>
+    <color name="aistack_notification">#FFD6673F</color>
+</resources>

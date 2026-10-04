@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Camada monocromática (ícones temáticos do Android 13+): os três quadrados com alfa 0,55; as sobreposições se acumulam (0,80 e 0,91), lembrando o blend do original. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1392"
+    android:viewportHeight="1392">
+    <path
+        android:name="claude"
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.55"
+        android:pathData="M496,396H696A100,100 0,0 1,796,496V696A100,100 0,0 1,696,796H496A100,100 0,0 1,396,696V496A100,100 0,0 1,496,396Z" />
+    <path
+        android:name="codex"
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.55"
+        android:pathData="M596,496H796A100,100 0,0 1,896,596V796A100,100 0,0 1,796,896H596A100,100 0,0 1,496,796V596A100,100 0,0 1,596,496Z" />
+    <path
+        android:name="gemini"
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.55"
+        android:pathData="M696,596H896A100,100 0,0 1,996,696V896A100,100 0,0 1,896,996H696A100,100 0,0 1,596,896V696A100,100 0,0 1,696,596Z" />
+</vector>

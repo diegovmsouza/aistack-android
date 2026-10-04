@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ilustração: sem conexão — elo partido.
+     Camada "destaque": monocromática (preto + alfa), feita para ser tingida em Compose com
+     ColorFilter.tint (SrcIn) — veja EmptyState/Illustration no design system. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="120dp"
+    android:viewportWidth="160"
+    android:viewportHeight="120">
+    <path android:strokeColor="#FF000000" android:strokeAlpha="0.5" android:strokeWidth="3" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M89,60 H95" />
+    <path android:strokeColor="#FF000000" android:strokeAlpha="0.5" android:strokeWidth="3" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M104,60 H111" />
+    <path android:strokeColor="#FF000000" android:strokeAlpha="1.0" android:strokeWidth="3" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M95.5,71 L103.5,49" />
+    <path android:fillColor="#FF000000" android:fillAlpha="1.0" android:pathData="M86.5,60 A2.5,2.5 0 1 1 91.5,60 A2.5,2.5 0 1 1 86.5,60 Z" />
+    <path android:fillColor="#FF000000" android:fillAlpha="1.0" android:pathData="M108.5,60 A2.5,2.5 0 1 1 113.5,60 A2.5,2.5 0 1 1 108.5,60 Z" />
+</vector>

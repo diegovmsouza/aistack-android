@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API 27+ escuro: ícones claros na barra de navegação. -->
+<resources>
+    <style name="Theme.AiStack" parent="Theme.AiStack.Base">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

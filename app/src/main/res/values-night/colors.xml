@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Variante escura das cores de janela (ver values/colors.xml). -->
+<resources>
+    <color name="aistack_bg">#FF0D0E11</color>
+    <color name="aistack_surface">#FF16171A</color>
+    <color name="aistack_fg">#FFEFF0F3</color>
+    <color name="aistack_accent">#FFED845B</color>
+</resources>

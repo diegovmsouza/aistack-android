@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ilustração: nada pendente (caixa de entrada vazia).
+     Camada "neutra": monocromática (preto + alfa), feita para ser tingida em Compose com
+     ColorFilter.tint (SrcIn) — veja EmptyState/Illustration no design system. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="120dp"
+    android:viewportWidth="160"
+    android:viewportHeight="120">
+    <path android:fillColor="#FF000000" android:fillAlpha="0.07" android:pathData="M24,82 L37,54 Q39,50 43,50 H117 Q121,50 123,54 L136,82 V98 Q136,106 128,106 H32 Q24,106 24,98 Z" />
+    <path android:strokeColor="#FF000000" android:strokeAlpha="0.45" android:strokeWidth="1.5" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M24,82 L37,54 Q39,50 43,50 H117 Q121,50 123,54 L136,82 V98 Q136,106 128,106 H32 Q24,106 24,98 Z" />
+    <path android:strokeColor="#FF000000" android:strokeAlpha="0.45" android:strokeWidth="1.5" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M24,82 H56 L62,91 H98 L104,82 H136" />
+    <path android:strokeColor="#FF000000" android:strokeAlpha="0.16" android:strokeWidth="3" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M48,64 H112" />
+</vector>

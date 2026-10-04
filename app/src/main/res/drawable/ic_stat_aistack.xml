@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícone de notificação (barra de status): silhueta da marca, só canal alfa. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:name="claude"
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.6"
+        android:pathData="M5.25,2H11.75A3.25,3.25 0,0 1,15,5.25V11.75A3.25,3.25 0,0 1,11.75,15H5.25A3.25,3.25 0,0 1,2,11.75V5.25A3.25,3.25 0,0 1,5.25,2Z" />
+    <path
+        android:name="codex"
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.6"
+        android:pathData="M8.75,5.5H15.25A3.25,3.25 0,0 1,18.5,8.75V15.25A3.25,3.25 0,0 1,15.25,18.5H8.75A3.25,3.25 0,0 1,5.5,15.25V8.75A3.25,3.25 0,0 1,8.75,5.5Z" />
+    <path
+        android:name="gemini"
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.6"
+        android:pathData="M12.25,9H18.75A3.25,3.25 0,0 1,22,12.25V18.75A3.25,3.25 0,0 1,18.75,22H12.25A3.25,3.25 0,0 1,9,18.75V12.25A3.25,3.25 0,0 1,12.25,9Z" />
+</vector>

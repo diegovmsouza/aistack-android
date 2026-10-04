@@ -1,25 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Primeiro plano do ícone adaptativo: marca do aistack-icon.svg (screen pré-calculado: C+X #F1C9BF, X+G #BCD0F6, C+X+G #F7E8F9). Viewport de 1392 = 108dp, com o ladrilho de 928 do desktop na zona segura de 72dp. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <group
-        android:scaleX="1.3"
-        android:scaleY="1.3"
-        android:pivotX="54"
-        android:pivotY="54">
-        <!-- Quadrado 1: Âmbar/Terracota Claude -->
-        <path
-            android:fillColor="#D97757"
-            android:pathData="M34,34 h18 v18 h-18 z" />
-        <!-- Quadrado 2: Azul Gemini/Agy -->
-        <path
-            android:fillColor="#38BDF8"
-            android:pathData="M56,34 h18 v18 h-18 z" />
-        <!-- Quadrado 3: Grafite/Branco Codex -->
-        <path
-            android:fillColor="#F3F4F6"
-            android:pathData="M45,56 h18 v18 h-18 z" />
-    </group>
+    android:viewportWidth="1392"
+    android:viewportHeight="1392">
+    <path
+        android:name="claude"
+        android:fillColor="#FFE0845A"
+        android:pathData="M496,396H696A100,100 0,0 1,796,496V696A100,100 0,0 1,696,796H496A100,100 0,0 1,396,696V496A100,100 0,0 1,496,396Z" />
+    <path
+        android:name="codex"
+        android:fillColor="#FF8E909C"
+        android:pathData="M596,496H796A100,100 0,0 1,896,596V796A100,100 0,0 1,796,896H596A100,100 0,0 1,496,796V596A100,100 0,0 1,596,496Z" />
+    <path
+        android:name="gemini"
+        android:fillColor="#FF6E9BF5"
+        android:fillAlpha="0.95"
+        android:pathData="M696,596H896A100,100 0,0 1,996,696V896A100,100 0,0 1,896,996H696A100,100 0,0 1,596,896V696A100,100 0,0 1,696,596Z" />
+    <path
+        android:name="overlap_cx"
+        android:fillColor="#FFF1C9BF"
+        android:pathData="M596,496H796V696A100,100 0,0 1,696,796H496V596A100,100 0,0 1,596,496Z" />
+    <path
+        android:name="overlap_xg"
+        android:fillColor="#FFBCD0F6"
+        android:pathData="M696,596H896V796A100,100 0,0 1,796,896H596V696A100,100 0,0 1,696,596Z" />
+    <path
+        android:name="overlap_cxg"
+        android:fillColor="#FFF7E8F9"
+        android:pathData="M696,596H796V696A100,100 0,0 1,696,796H596V696A100,100 0,0 1,696,596Z" />
 </vector>

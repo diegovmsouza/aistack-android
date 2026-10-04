@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tema de janela do aistack. O visual real vem do AiStackTheme (Compose); aqui só
-     definimos fundo e barras transparentes (edge-to-edge) para evitar flash na abertura. -->
+<!-- Tema de janela escuro (ver values/themes.xml). -->
 <resources>
-    <style name="Theme.AiStack.Base" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.AiStack.Base" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/aistack_bg</item>
         <item name="android:colorBackground">@color/aistack_bg</item>
         <item name="android:colorAccent">@color/aistack_accent</item>
         <item name="android:colorPrimary">@color/aistack_accent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <style name="Theme.AiStack" parent="Theme.AiStack.Base" />

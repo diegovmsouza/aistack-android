@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ilustração: nada pendente — selo de concluído.
+     Camada "destaque": monocromática (preto + alfa), feita para ser tingida em Compose com
+     ColorFilter.tint (SrcIn) — veja EmptyState/Illustration no design system. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="120dp"
+    android:viewportWidth="160"
+    android:viewportHeight="120">
+    <path android:fillColor="#FF000000" android:fillAlpha="0.16" android:pathData="M63,26 A17,17 0 1 1 97,26 A17,17 0 1 1 63,26 Z" />
+    <path android:strokeColor="#FF000000" android:strokeAlpha="1.0" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M63,26 A17,17 0 1 1 97,26 A17,17 0 1 1 63,26 Z" />
+    <path android:strokeColor="#FF000000" android:strokeAlpha="1.0" android:strokeWidth="3" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M72.5,26.5 L78,32 L88.5,21" />
+    <path android:fillColor="#FF000000" android:fillAlpha="0.55" android:pathData="M45.5,20 A2.5,2.5 0 1 1 50.5,20 A2.5,2.5 0 1 1 45.5,20 Z" />
+    <path android:fillColor="#FF000000" android:fillAlpha="0.45" android:pathData="M111,30 A3,3 0 1 1 117,30 A3,3 0 1 1 111,30 Z" />
+    <path android:fillColor="#FF000000" android:fillAlpha="0.6" android:pathData="M124,9 Q124.9,13.1 129,14 Q124.9,14.9 124,19 Q123.1,14.9 119,14 Q123.1,13.1 124,9 Z" />
+</vector>
