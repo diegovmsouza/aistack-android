@@ -5,10 +5,12 @@
 Sobrescreva antes de cada pausa e ao trocar de assunto (até 60 linhas). Regras: `docs/turnolongo/CONTRATO.md` · índice: `docs/turnolongo/MAPA.md`.
 
 ## Agora
-- Assunto ativo: app Android completo — CONCLUÍDO (2026-10-04 09:1x). Android main em 745766d; desktop `feat/mobile-companion` 1e644f8 (worktree `AiStack/worktrees/mobile`, sem merge no main).
-- Onda 3 (E2E isolado no emulator-5556 «Pixel_10_Pro_XL_2», AISTACK_HOME=~/.aistack-mobile-dev, relay local 127.0.0.1:8787, RPC na porta 1431) validou: pareamento por link https; nova sessão pelo celular (origin=mobile); streaming; notificação de permissão com Permitir; done e Live Update; Pendências; comandos `/`; menu de anexos; painel Agentes; explorador e visualizador; câmera ponta a ponta (o modelo descreveu a foto, miniatura no chip); ditado em escuta.
-- Corrigido na Onda 3: miniaturas (decodeStream só com bounds devolve null → spinner eterno), explorador pelo chat, re-pareamento falso ao reabrir a tarefa, trilha do explorador.
-- Falta (fora do alcance automático): conferir a olho o ícone de celular na sidebar do desktop (validado só por dados; captura de tela falha no Wayland); merge de `feat/mobile-companion` e deploy do relay — decisão do usuário.
+- Assunto ativo: app Android completo — ENTREGUE (2026-10-04 10:1x). Android main 1774c02+; AiStack main 98154d2 «release: v0.4.8» (feat/mobile-companion já está no main, em fast-forward).
+- Feito nesta rodada: merge no main (migração de origem renumerada para 0005), `lastMessage` no listConversations remoto + prévia no app, Markdown grande fora da thread principal, erro de escopo explicativo, deploy do relay na VM snake3000 (backup .bak-20261004, LimitNOFILE=65536), RELEASE_NOTES_v0.4.8.md.
+- E2E 10:0x (emulator-5556 + dev isolado): sessão criada pelo celular, resposta ao vivo, prévia após reabrir, reconexão automática após o host reiniciar, `/` comandos, tema escuro; ícone de celular na sidebar do desktop CONFERIDO A OLHO (captura pelo portal: gdbus org.freedesktop.portal.Screenshot; gnome-screenshot trava no Wayland).
+- Ícones: todos vetoriais (adaptive + monochrome), sem PNG.
+- Pendente: conferir a CI do main e a publicação da v0.4.8 pelo release.yml (`gh run list -b main`). Na CI de 12:33, o teste `mcp_broker::tests::soquete_vivo_no_caminho_principal_nao_e_derrubado` falhou de forma instável (é anterior ao merge); se ele derrubar a CI, `gh run rerun --failed`.
+- Banco de dev antigo: ~/.aistack-mobile-dev/aistack.db.pre-0005 (checksum da migração 3 divergia). Pasta descartável ~/aistack-e2e.
 
 ## Pedido do usuário (resumo fiel)
 App Android bonito, com animações, SVG obrigatório para imagens; todos os recursos do AiStack: sessões do desktop (ler/interagir), iniciar sessão no celular (aparece na sidebar do desktop com ícone de celular no topo, controle total no desktop), notificações em tempo real de tarefas e pendências pareadas, sub-agentes, comandos de barra, explorador de arquivos, câmera, microfone. Pareamento atual funciona: preservar. Testar no emulador Pixel_10_Pro_XL (emulator-5554 já ligado). Máx. 5 agentes, effort ≤ high.
