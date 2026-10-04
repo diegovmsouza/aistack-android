@@ -9,7 +9,7 @@ Sobrescreva antes de cada pausa e ao trocar de assunto (até 60 linhas). Regras:
 - Feito nesta rodada: merge no main (migração de origem renumerada para 0005), `lastMessage` no listConversations remoto + prévia no app, Markdown grande fora da thread principal, erro de escopo explicativo, deploy do relay na VM snake3000 (backup .bak-20261004, LimitNOFILE=65536), RELEASE_NOTES_v0.4.8.md.
 - E2E 10:0x (emulator-5556 + dev isolado): sessão criada pelo celular, resposta ao vivo, prévia após reabrir, reconexão automática após o host reiniciar, `/` comandos, tema escuro; ícone de celular na sidebar do desktop CONFERIDO A OLHO (captura pelo portal: gdbus org.freedesktop.portal.Screenshot; gnome-screenshot trava no Wayland).
 - Ícones: todos vetoriais (adaptive + monochrome), sem PNG.
-- Pendente: a CI do main quebra no clippy 1.99 (api/remote_relay/runtime/remote_policy, alvo Windows) e no teste instável do mcp_broker. OUTRA SESSÃO corrige isso na branch fix/ci-main (cda0b78, sobre o 98154d2): não mexer. Quando ela entrar no main com a CI verde, o release.yml publica a v0.4.8 (a tag ainda não existe). Conferir com `gh run list -b main` e `gh release view v0.4.8`.
+- CONCLUÍDO 11:15: a CI do main ficou verde (correção do fix/ci-main, de outra sessão), a v0.4.8 foi publicada às 13:57Z e depois veio a v0.4.9. Nada pendente; o turno foi encerrado.
 - 10:2x: o menu / do celular ficou sem ícones, só o texto /comando (6628814, verificado no emulador).
 - Banco de dev antigo: ~/.aistack-mobile-dev/aistack.db.pre-0005 (checksum da migração 3 divergia). Pasta descartável ~/aistack-e2e.
 
