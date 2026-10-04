@@ -1,4 +1,4 @@
-package br.com.amberwrite.aistack.relay
+package br.com.amberwrite.aistack.core.relay
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

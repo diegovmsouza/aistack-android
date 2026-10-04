@@ -1,4 +1,4 @@
-package br.com.amberwrite.aistack.crypto
+package br.com.amberwrite.aistack.core.crypto
 
 import org.bouncycastle.crypto.generators.Ed25519KeyPairGenerator
 import org.bouncycastle.crypto.generators.X25519KeyPairGenerator
