@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Aparelhos pareados -->
+    <string name="devices_title">Aparelhos pareados</string>
+    <string name="devices_reload">Recarregar aparelhos</string>
+    <string name="devices_loading">Carregando aparelhos…</string>
+    <string name="devices_relay">Relay: %1$s</string>
+    <string name="devices_relay_sessions">%1$d sessões</string>
+    <string name="devices_relay_error">Relay do desktop: %1$s</string>
+    <string name="devices_empty_title">Nenhum aparelho</string>
+    <string name="devices_empty_body">O desktop ainda não listou aparelhos pareados. Puxe para atualizar.</string>
+    <string name="devices_error_title">Não foi possível carregar os aparelhos</string>
+    <string name="devices_section_this">Este aparelho</string>
+    <string name="devices_section_others">Outros aparelhos (%1$d)</string>
+    <string name="devices_this_badge">Este aparelho</string>
+    <string name="devices_revoked_badge">Revogado</string>
+    <string name="devices_active_now">Ativo agora</string>
+    <string name="devices_last_seen">Último acesso %1$s</string>
+    <string name="devices_never_seen">Sem acesso registrado</string>
+    <string name="devices_paired_at">Pareado %1$s</string>
+    <string name="devices_others_note">Só o desktop pode revogar outros aparelhos. Daqui você só desconecta este celular.</string>
+    <string name="devices_not_listed">Este celular não aparece na lista do desktop. Você ainda pode apagar o pareamento local.</string>
+    <string name="devices_desc_phone">Celular</string>
+    <string name="devices_desc_laptop">Notebook</string>
+    <string name="devices_desc_desktop">Computador</string>
+    <string name="devices_card_desc">%1$s, %2$s</string>
+    <string name="devices_revoke_error">Não deu para revogar: %1$s</string>
+    <string name="devices_dismiss">Fechar aviso</string>
+
+    <!-- Desparear (diálogo forte, compartilhado com Configurações) -->
+    <string name="unpair_action">Desparear este aparelho</string>
+    <string name="unpair_title">Desparear este aparelho?</string>
+    <string name="unpair_body">O desktop deixa de aceitar este celular e as credenciais locais são apagadas. Sessões e notificações param aqui. Para voltar, será preciso um novo código de pareamento.</string>
+    <string name="unpair_type_hint">Digite \"%1$s\" para confirmar</string>
+    <string name="unpair_confirm">Desparear</string>
+    <string name="unpair_cancel">Cancelar</string>
+    <string name="unpair_working">Despareando…</string>
+</resources>

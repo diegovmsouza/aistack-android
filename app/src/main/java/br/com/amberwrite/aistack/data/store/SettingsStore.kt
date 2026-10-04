@@ -34,6 +34,17 @@ class SettingsStore(context: Context) {
         _settings.value = next
     }
 
+    private val _materialYou = MutableStateFlow(prefs.getBoolean(KEY_MATERIAL_YOU, false))
+
+    /** Cores dinâmicas do Material You (Android 12+). Desligado por padrão. (F4, aditivo) */
+    val materialYou: StateFlow<Boolean> = _materialYou.asStateFlow()
+
+    /** Liga/desliga as cores dinâmicas do Material You e persiste. (F4, aditivo) */
+    fun setMaterialYou(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_MATERIAL_YOU, enabled).apply()
+        _materialYou.value = enabled
+    }
+
     private fun load() = Settings(
         startAtBoot = prefs.getBoolean(KEY_BOOT, false),
         keepConnected = prefs.getBoolean(KEY_KEEP, true),
@@ -47,5 +58,6 @@ class SettingsStore(context: Context) {
         private const val KEY_KEEP = "keep_connected"
         private const val KEY_DONE = "notify_done"
         private const val KEY_THEME = "theme"
+        private const val KEY_MATERIAL_YOU = "material_you"
     }
 }

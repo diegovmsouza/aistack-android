@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Visualizador de arquivo (§4.6) -->
+    <string name="fileview_reload">Recarregar arquivo</string>
+    <string name="fileview_copy_all">Copiar o conteúdo</string>
+    <string name="fileview_copied">Conteúdo copiado</string>
+    <string name="fileview_line_copied">Linha %1$d copiada</string>
+    <string name="fileview_copy_line">Copiar linha %1$d</string>
+    <string name="fileview_mention">Mencionar no chat</string>
+    <string name="fileview_wrap">Quebrar linhas</string>
+    <string name="fileview_lines">%1$d linhas</string>
+    <string name="fileview_line_desc">Linha %1$d: %2$s</string>
+    <string name="fileview_load_more">Carregar mais</string>
+    <string name="fileview_partial">Mostrando %1$s de %2$s.</string>
+    <string name="fileview_partial_unknown">Mostrando só o começo do arquivo (%1$s).</string>
+    <string name="fileview_ceiling">Arquivo grande: mostrando os primeiros %1$s. O restante só pode ser visto no desktop.</string>
+    <string name="fileview_ceiling_unknown">Arquivo grande: mostrando só o começo. O restante só pode ser visto no desktop.</string>
+    <string name="fileview_binary_title">Arquivo binário</string>
+    <string name="fileview_binary_body">Este arquivo não é texto, então não dá para mostrar aqui.</string>
+    <string name="fileview_empty_title">Arquivo vazio</string>
+    <string name="fileview_empty_body">Não há nenhum conteúdo neste arquivo.</string>
+    <string name="fileview_error_title">Não foi possível abrir</string>
+    <string name="fileview_error_not_found">Arquivo não encontrado</string>
+    <string name="fileview_error_permission">Sem permissão para este arquivo</string>
+    <string name="fileview_error_permission_body">O arquivo fica fora das pastas que o desktop libera para o celular.</string>
+    <string name="fileview_error_offline">Sem conexão com o desktop</string>
+    <string name="fileview_loading">Abrindo arquivo…</string>
+</resources>

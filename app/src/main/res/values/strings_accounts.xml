@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Contas e cotas (§4.8) -->
+    <string name="accounts_title">Contas e cotas</string>
+    <string name="accounts_subtitle_version">AiStack %1$s no desktop</string>
+    <string name="accounts_reload">Recarregar contas</string>
+    <string name="accounts_loading">Carregando contas…</string>
+    <string name="accounts_empty_title">Nenhuma conta</string>
+    <string name="accounts_empty_body">Entre numa conta de Claude, Codex ou outro provedor no desktop e ela aparece aqui.</string>
+    <string name="accounts_error_title">Não foi possível carregar as contas</string>
+    <string name="accounts_slot">Slot %1$s</string>
+    <string name="accounts_slot_desc">Conta no slot %1$s</string>
+    <string name="accounts_auth_ok">Conectada</string>
+    <string name="accounts_auth_logged_out">Sem login</string>
+    <string name="accounts_auth_error">Erro ao checar</string>
+    <string name="accounts_auth_not_installed">CLI não instalada</string>
+    <string name="accounts_auth_unknown">Estado desconhecido</string>
+    <string name="accounts_limit_warning">Perto do limite de uso</string>
+    <string name="accounts_limit_rejected">Limite de uso atingido</string>
+    <string name="accounts_window_five_hour">Sessão de 5 h</string>
+    <string name="accounts_window_weekly">Semanal</string>
+    <string name="accounts_window_monthly">Mensal</string>
+    <string name="accounts_window_unknown">sem dados</string>
+    <string name="accounts_reset_in">Renova em %1$s</string>
+    <string name="accounts_reset_due">Renovação pendente</string>
+    <string name="accounts_no_usage">Sem dados de uso para esta conta.</string>
+    <string name="accounts_updated">Atualizado %1$s</string>
+    <string name="accounts_group_count">%1$d de %2$d conectadas</string>
+    <string name="accounts_mcp_title">Servidores MCP</string>
+    <string name="accounts_mcp_disabled">desativado</string>
+    <string name="accounts_mcp_desc">Servidor MCP %1$s</string>
+    <string name="accounts_footer">Login e troca de conta ficam no desktop. Aqui é só leitura.</string>
+</resources>

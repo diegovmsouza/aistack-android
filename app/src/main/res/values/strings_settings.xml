@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Configurações (§4.9) -->
+    <string name="settings_title">Configurações</string>
+
+    <string name="settings_section_appearance">Aparência</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_theme_desc">Tema %1$s</string>
+    <string name="settings_material_you">Cores do Material You</string>
+    <string name="settings_material_you_desc">Usa as cores do seu papel de parede no lugar da paleta do AiStack.</string>
+    <string name="settings_material_you_unsupported">Disponível a partir do Android 12.</string>
+
+    <string name="settings_section_notifications">Notificações</string>
+    <string name="settings_notify_done">Avisar quando um turno terminar</string>
+    <string name="settings_notify_done_desc">Só com o app em segundo plano.</string>
+    <string name="settings_notifications_off">As notificações do AiStack estão desligadas neste aparelho.</string>
+    <string name="settings_notifications_all">Todas as notificações do app</string>
+    <string name="settings_notifications_all_desc">Abre os ajustes do sistema para o AiStack.</string>
+    <string name="settings_channel_pending">Pendências</string>
+    <string name="settings_channel_pending_desc">Permissões e perguntas que esperam por você.</string>
+    <string name="settings_channel_progress">Progresso</string>
+    <string name="settings_channel_progress_desc">Turnos em andamento.</string>
+    <string name="settings_channel_done">Turnos concluídos</string>
+    <string name="settings_channel_done_desc">Quando o agente termina uma resposta.</string>
+    <string name="settings_channel_connection">Conexão</string>
+    <string name="settings_channel_connection_desc">Notificação fixa do serviço em segundo plano.</string>
+    <string name="settings_channel_off">Desligado</string>
+    <string name="settings_open_system">Abre nos ajustes do sistema</string>
+
+    <string name="settings_section_connection">Conexão</string>
+    <string name="settings_relay_url">Relay</string>
+    <string name="settings_relay_none">Não pareado</string>
+    <string name="settings_copy_relay">Copiar URL do relay</string>
+    <string name="settings_copied">Copiado</string>
+    <string name="settings_keep_connected">Manter conectado</string>
+    <string name="settings_keep_connected_desc">Mantém a conexão em segundo plano com uma notificação fixa.</string>
+    <string name="settings_start_at_boot">Iniciar com o aparelho</string>
+    <string name="settings_start_at_boot_desc">Requer \"Manter conectado\".</string>
+    <string name="settings_battery">Otimização de bateria</string>
+    <string name="settings_battery_ok">Sem restrição: a conexão continua em segundo plano.</string>
+    <string name="settings_battery_restricted">Otimizada pelo sistema: o Android pode cortar a conexão em segundo plano.</string>
+    <string name="settings_battery_action">Liberar</string>
+    <string name="settings_battery_dialog_title">Liberar o AiStack da otimização de bateria?</string>
+    <string name="settings_battery_dialog_body">Com a otimização ligada, o Android pode suspender a conexão com o desktop e você deixa de receber pendências e avisos de fim de turno. Liberando, o AiStack continua conectado em segundo plano. O consumo extra é pequeno: o túnel só troca mensagens quando há atividade. Você pode desfazer isso nos ajustes do sistema.</string>
+    <string name="settings_battery_dialog_confirm">Continuar</string>
+    <string name="settings_battery_dialog_cancel">Agora não</string>
+
+    <string name="settings_section_device">Este aparelho</string>
+    <string name="settings_device_name">Nome mostrado no desktop</string>
+    <string name="settings_device_name_save">Salvar</string>
+    <string name="settings_device_name_saved">Nome salvo</string>
+    <string name="settings_device_name_note">O desktop vê o nome novo no próximo pareamento.</string>
+    <string name="settings_device_name_loading">Carregando o nome do aparelho…</string>
+
+    <string name="settings_section_desktop">Desktop</string>
+    <string name="settings_devices">Aparelhos pareados</string>
+    <string name="settings_devices_desc">Quem está conectado ao seu desktop.</string>
+    <string name="settings_accounts">Contas e cotas</string>
+    <string name="settings_accounts_desc">Logins e limites de uso por provedor.</string>
+    <string name="settings_design_catalog">Catálogo do design system</string>
+    <string name="settings_design_catalog_desc">Só em builds de depuração.</string>
+
+    <string name="settings_section_about">Sobre</string>
+    <string name="settings_app_version">Versão do app</string>
+    <string name="settings_desktop_version">AiStack no desktop</string>
+    <string name="settings_unknown">—</string>
+
+    <string name="settings_section_danger">Zona de perigo</string>
+    <string name="settings_unpair_desc">Apaga as credenciais deste celular e o remove do desktop. Para voltar, será preciso parear de novo.</string>
+</resources>

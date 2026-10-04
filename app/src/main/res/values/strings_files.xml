@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kit compartilhado da F4 (esqueletos, erro) -->
+    <string name="files_kit_loading">Carregando…</string>
+    <string name="files_kit_error_title">Algo deu errado</string>
+    <string name="files_kit_retry">Tentar de novo</string>
+    <string name="files_kit_copied">Copiado</string>
+
+    <!-- Explorador de arquivos (§4.6) -->
+    <string name="files_title">Arquivos</string>
+    <string name="files_roots">Raízes</string>
+    <string name="files_roots_title">Pastas permitidas</string>
+    <string name="files_search">Buscar nesta pasta</string>
+    <string name="files_search_placeholder">Filtrar por nome…</string>
+    <string name="files_search_close">Fechar busca</string>
+    <string name="files_reload">Recarregar</string>
+    <string name="files_go_up">Subir um nível</string>
+    <string name="files_breadcrumb">Trilha de pastas</string>
+    <string name="files_crumb_desc">Ir para %1$s</string>
+    <string name="files_truncated">Mostrando só os primeiros %1$d itens desta pasta.</string>
+    <string name="files_empty_title">Pasta vazia</string>
+    <string name="files_empty_body">Não há nada aqui por enquanto.</string>
+    <string name="files_roots_empty_title">Nenhuma pasta liberada</string>
+    <string name="files_roots_empty_body">As pastas dos projetos das conversas aparecem aqui assim que o desktop as informar.</string>
+    <string name="files_no_results_title">Nada encontrado</string>
+    <string name="files_no_results_body">Nenhum item com “%1$s” nesta pasta.</string>
+    <string name="files_clear_search">Limpar busca</string>
+    <string name="files_error_permission_title">Sem permissão</string>
+    <string name="files_error_permission_body">Esta pasta fica fora das pastas que o desktop libera para o celular.</string>
+    <string name="files_error_not_found_title">Pasta não encontrada</string>
+    <string name="files_error_not_dir_title">Isto não é uma pasta</string>
+    <string name="files_error_offline_title">Sem conexão com o desktop</string>
+    <string name="files_error_generic_title">Não foi possível listar</string>
+    <string name="files_back_to_roots">Ver pastas permitidas</string>
+    <string name="files_entry_options">Opções de %1$s</string>
+    <string name="files_mention">Mencionar no chat</string>
+    <string name="files_copy_path">Copiar caminho</string>
+    <string name="files_open">Abrir</string>
+    <string name="files_path_copied">Caminho copiado</string>
+    <string name="files_kind_folder">pasta</string>
+    <string name="files_kind_file">arquivo</string>
+    <string name="files_kind_other">item especial</string>
+    <string name="files_items_count">%1$d itens</string>
+    <string name="files_filtered_count">%1$d de %2$d itens</string>
+</resources>
