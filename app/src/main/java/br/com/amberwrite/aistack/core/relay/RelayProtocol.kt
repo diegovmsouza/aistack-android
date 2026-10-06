@@ -21,7 +21,9 @@ object RelayProtocol {
         val t: String = "hello",
         val k: String,
         val aead: String? = "a",
-        val caps: List<String>? = null
+        val caps: List<String>? = null,
+        /** X25519 efêmera desta conexão (R-173): entra na derivação e dá sigilo futuro. */
+        val e: String? = null
     )
 
     data class HostAuthMessage(

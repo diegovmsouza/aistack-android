@@ -63,6 +63,8 @@ class RelayConnection(
         var step = Step.HELLO_SENT
         var tunnel: TunnelSession? = null
         var clientHello: ByteArray = ByteArray(0)
+        /** Privada X25519 efêmera desta conexão (R-173); some com a tentativa. */
+        var ephPriv: ByteArray = ByteArray(0)
         var hostHello: ByteArray = ByteArray(0)
         var hostFrag = false
         var handshakeTimer: Job? = null
@@ -222,10 +224,13 @@ class RelayConnection(
         override fun onOpen(webSocket: WebSocket, response: Response) {
             if (!isCurrent(a)) return
             _state.value = ConnectionState.Handshaking
+            val (ephPriv, ephPub) = CryptoEngine.generateEphemeral()
+            a.ephPriv = ephPriv
             val hello = RelayProtocol.HelloMessage(
                 k = a.identity.publicKeyB64Url(),
                 aead = "a",
-                caps = listOf(RelayProtocol.CAP_FRAG)
+                caps = listOf(RelayProtocol.CAP_FRAG),
+                e = CryptoEngine.b64uEncode(ephPub)
             )
             val bytes = RelayProtocol.toJson(hello).toByteArray(Charsets.UTF_8)
             a.clientHello = bytes
@@ -288,7 +293,11 @@ class RelayConnection(
                 a.hostFrag = hello.get("caps")?.let { caps ->
                     (caps as? com.google.gson.JsonArray)?.any { it.asStr() == RelayProtocol.CAP_FRAG }
                 } ?: false
-                val shared = CryptoEngine.computeSharedSecret(a.identity.privateKeyBytes, hostPub)
+                // DH(persistente, host) ‖ DH(efêmera, host): roubar a chave persistente depois
+                // não decifra o tráfego gravado (sigilo futuro, R-173).
+                val shared = CryptoEngine.computeSharedSecret(a.identity.privateKeyBytes, hostPub) +
+                    CryptoEngine.computeSharedSecret(a.ephPriv, hostPub)
+                a.ephPriv.fill(0)
                 val (sendKey, recvKey) = CryptoEngine.deriveTunnelKeys(shared)
                 a.tunnel = TunnelSession(sendKey, recvKey)
                 a.step = Step.AWAIT_HOST_AUTH

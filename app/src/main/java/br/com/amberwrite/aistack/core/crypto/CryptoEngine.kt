@@ -45,6 +45,14 @@ object CryptoEngine {
     /**
      * Calcula o segredo compartilhado X25519 (32 bytes).
      */
+    /** Par X25519 novo (privada, pública), para a chave efêmera de cada conexão. */
+    fun generateEphemeral(): Pair<ByteArray, ByteArray> {
+        val gen = org.bouncycastle.crypto.generators.X25519KeyPairGenerator()
+        gen.init(org.bouncycastle.crypto.params.X25519KeyGenerationParameters(java.security.SecureRandom()))
+        val pair = gen.generateKeyPair()
+        return (pair.private as X25519PrivateKeyParameters).encoded to (pair.public as X25519PublicKeyParameters).encoded
+    }
+
     fun computeSharedSecret(myPrivBytes: ByteArray, peerPubBytes: ByteArray): ByteArray {
         val priv = X25519PrivateKeyParameters(myPrivBytes, 0)
         val pub = X25519PublicKeyParameters(peerPubBytes, 0)
