@@ -10,6 +10,7 @@ Sobrescreva antes de cada pausa e ao trocar de assunto (até 60 linhas). Regras:
 - E2E 10:0x (emulator-5556 + dev isolado): sessão criada pelo celular, resposta ao vivo, prévia após reabrir, reconexão automática após o host reiniciar, `/` comandos, tema escuro; ícone de celular na sidebar do desktop CONFERIDO A OLHO (captura pelo portal: gdbus org.freedesktop.portal.Screenshot; gnome-screenshot trava no Wayland).
 - Ícones: todos vetoriais (adaptive + monochrome), sem PNG.
 - CONCLUÍDO 11:15: a CI do main ficou verde (correção do fix/ci-main, de outra sessão), a v0.4.8 foi publicada às 13:57Z e depois veio a v0.4.9. Nada pendente; o turno foi encerrado.
+- PARADA 2026-10-05 (ordem do Diego): nada em curso. Depois da entrega: 6628814 (menu / sem ícones), 8f90b07 (ícones Codex/Kimi/Qwen com flags de arco explícitas, verificado no emulator-5556). Sem branches nem PRs abertos; main = origin/main. Próximo passo: nenhum; só retomar a pedido.
 - 10:2x: o menu / do celular ficou sem ícones, só o texto /comando (6628814, verificado no emulador).
 - Banco de dev antigo: ~/.aistack-mobile-dev/aistack.db.pre-0005 (checksum da migração 3 divergia). Pasta descartável ~/aistack-e2e.
 
