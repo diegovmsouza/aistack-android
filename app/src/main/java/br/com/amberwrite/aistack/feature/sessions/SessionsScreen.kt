@@ -62,6 +62,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -617,14 +618,18 @@ private fun SwipeableSessionRow(
     LaunchedEffect(swipe.targetValue) {
         if (swipe.targetValue != SwipeToDismissBoxValue.Settled) haptics.perform(HapticKind.Tick)
     }
-    val onDismiss: (SwipeToDismissBoxValue) -> Unit = remember(item.id, item.conversation.archived) {
+    // O SwipeToDismissBox chama onDismiss num LaunchedEffect(settledValue, onDismiss): a lambda
+    // precisa ser estável, senão cada mudança da linha (ex.: arquivada ↔ não) refaz a ação em laço.
+    val currentArchive by rememberUpdatedState(onArchive)
+    val currentRename by rememberUpdatedState(onRename)
+    val onDismiss: (SwipeToDismissBoxValue) -> Unit = remember(swipe) {
         { value ->
+            scope.launch { swipe.reset() }
             when (value) {
-                SwipeToDismissBoxValue.EndToStart -> { haptics.perform(HapticKind.Confirm); onArchive() }
-                SwipeToDismissBoxValue.StartToEnd -> onRename()
+                SwipeToDismissBoxValue.EndToStart -> { haptics.perform(HapticKind.Confirm); currentArchive() }
+                SwipeToDismissBoxValue.StartToEnd -> currentRename()
                 SwipeToDismissBoxValue.Settled -> Unit
             }
-            scope.launch { swipe.reset() }
         }
     }
 

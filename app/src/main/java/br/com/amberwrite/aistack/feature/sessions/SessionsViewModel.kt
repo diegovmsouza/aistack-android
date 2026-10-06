@@ -170,6 +170,7 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
      */
     fun archive(id: String, archived: Boolean = true) {
         val conv = deps.sessions.value.conversations.firstOrNull { it.id == id } ?: return
+        if (!archiving.add(id)) return // um pedido por conversa de cada vez
         val hide = archived && !deps.sessions.value.includeArchived
         if (hide) local.update { it.copy(hidden = it.hidden + id) }
         viewModelScope.launch {
@@ -182,9 +183,13 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
                 throw e
             } catch (e: Exception) {
                 local.update { it.copy(hidden = it.hidden - id, actionError = e.userMessage) }
+            } finally {
+                archiving.remove(id)
             }
         }
     }
+
+    private val archiving = mutableSetOf<String>()
 
     /** Desfaz o último arquivamento avisado. */
     fun undoArchive() {
