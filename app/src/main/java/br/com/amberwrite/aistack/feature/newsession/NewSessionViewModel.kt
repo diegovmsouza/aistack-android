@@ -10,6 +10,7 @@ import br.com.amberwrite.aistack.data.model.EntryKind
 import br.com.amberwrite.aistack.data.model.ModelInfo
 import br.com.amberwrite.aistack.data.model.PermissionMode
 import br.com.amberwrite.aistack.data.model.Provider
+import br.com.amberwrite.aistack.data.repo.HomeAccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,9 +34,13 @@ interface NewSessionDeps {
         permissionMode: PermissionMode,
         model: String?,
         effort: String?,
+        extraDirs: List<String>,
     ): CreatedSession
     suspend fun send(conversationId: String, text: String)
     suspend fun listDir(path: String?): DirListing
+    suspend fun homeAccess(): HomeAccess?
+    suspend fun setHomeAccess(enabled: Boolean): HomeAccess
+    suspend fun createDirectory(path: String): String
 }
 
 private class ContainerNewSessionDeps(private val c: AppContainer) : NewSessionDeps {
@@ -49,6 +54,7 @@ private class ContainerNewSessionDeps(private val c: AppContainer) : NewSessionD
         permissionMode: PermissionMode,
         model: String?,
         effort: String?,
+        extraDirs: List<String>,
     ): CreatedSession {
         val conv = c.sessionsRepo.createConversation(
             provider = provider,
@@ -56,11 +62,15 @@ private class ContainerNewSessionDeps(private val c: AppContainer) : NewSessionD
             permissionMode = permissionMode,
             model = model,
             effort = effort,
+            extraDirs = extraDirs,
         )
         return CreatedSession(conv.id, conv.warning?.takeIf { it.isNotBlank() })
     }
     override suspend fun send(conversationId: String, text: String) = c.chatRepo.send(conversationId, text)
     override suspend fun listDir(path: String?) = c.filesRepo.listDir(path)
+    override suspend fun homeAccess() = c.filesRepo.homeAccess()
+    override suspend fun setHomeAccess(enabled: Boolean) = c.filesRepo.setHomeAccess(enabled)
+    override suspend fun createDirectory(path: String) = c.filesRepo.createDirectory(path)
 }
 
 /**
@@ -87,14 +97,20 @@ class NewSessionViewModel(private val deps: NewSessionDeps) : ViewModel() {
         data class Done(val conversationId: String) : Phase
     }
 
+    /** Para onde vai a pasta escolhida no navegador. */
+    enum class BrowseTarget { Project, Extra }
+
     data class Browser(
         val path: String? = null,
         val dirs: List<DirEntry> = emptyList(),
         val loading: Boolean = true,
         val error: String? = null,
         val truncated: Boolean = false,
+        val target: BrowseTarget = BrowseTarget.Project,
+        /** Criando uma pasta nova (diálogo aberto e pedido em curso). */
+        val creatingDir: Boolean = false,
     ) {
-        val canGoUp: Boolean get() = parentPath(path) != null
+        val canGoUp: Boolean get() = path != null
     }
 
     data class UiState(
@@ -112,6 +128,13 @@ class NewSessionViewModel(private val deps: NewSessionDeps) : ViewModel() {
         val phase: Phase = Phase.Editing,
         val error: String? = null,
         val browser: Browser? = null,
+        /** Pastas lidas junto com o projeto (`extraDirs`). */
+        val extraDirs: List<String> = emptyList(),
+        /** Pasta pessoal liberada para o aparelho; `null` = ainda não sabe ou desktop sem o recurso. */
+        val homeAccess: HomeAccess? = null,
+        val homeAccessSupported: Boolean = true,
+        /** Pedido de liberar a pasta pessoal aguardando a confirmação do usuário. */
+        val confirmHome: Boolean = false,
         /** Id da conversa para abrir; a tela chama [onNavigated] depois de navegar. */
         val navigateTo: String? = null,
     ) {
@@ -207,48 +230,131 @@ class NewSessionViewModel(private val deps: NewSessionDeps) : ViewModel() {
 
     // ---- Navegação de pastas ----
 
-    fun openBrowser() {
-        val start = _state.value.projectPath.trim().takeIf { validateProjectPath(it) == null }
-        browse(start)
+    /** Raízes da última listagem sem caminho: subir de uma delas volta para a lista de raízes. */
+    private var roots: List<String> = emptyList()
+
+    fun openBrowser(target: BrowseTarget = BrowseTarget.Project) {
+        val start = if (target == BrowseTarget.Project) {
+            _state.value.projectPath.trim().takeIf { validateProjectPath(it) == null }
+        } else {
+            _state.value.homeAccess?.takeIf { it.granted }?.home?.ifBlank { null }
+        }
+        browse(start, target)
+        if (_state.value.homeAccess == null && _state.value.homeAccessSupported) loadHomeAccess()
     }
 
-    fun browse(path: String?) {
+    fun browse(path: String?, target: BrowseTarget = _state.value.browser?.target ?: BrowseTarget.Project) {
         browseJob?.cancel()
-        _state.update { it.copy(browser = Browser(path = path, loading = true)) }
+        _state.update { it.copy(browser = Browser(path = path, loading = true, target = target)) }
         browseJob = viewModelScope.launch {
             try {
                 val listing = deps.listDir(path)
                 val dirs = listing.entries
-                    .filter { it.kind == EntryKind.DIR && !it.name.startsWith(".") }
-                    .sortedBy { it.name.lowercase() }
+                    .filter { it.kind == EntryKind.DIR && (path == null || !it.name.startsWith(".")) }
+                    .let { if (path == null) it else it.sortedBy { e -> e.name.lowercase() } }
+                if (path == null) roots = dirs.map { it.name }
                 _state.update {
-                    it.copy(browser = Browser(path = listing.path ?: path, dirs = dirs, loading = false, truncated = listing.truncated))
+                    it.copy(browser = Browser(path = listing.path ?: path, dirs = dirs, loading = false, truncated = listing.truncated, target = target))
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _state.update { it.copy(browser = Browser(path = path, loading = false, error = e.userMessage)) }
+                _state.update { it.copy(browser = Browser(path = path, loading = false, error = e.userMessage, target = target)) }
             }
         }
     }
 
+    /** Na lista de raízes o nome já é o caminho inteiro; dentro de uma pasta, é só o nome. */
     fun browseInto(name: String) {
-        val base = _state.value.browser?.path ?: return
-        browse(joinPath(base, name))
+        val base = _state.value.browser?.path
+        browse(if (base == null) name else joinPath(base, name))
     }
 
     fun browseUp() {
-        val parent = parentPath(_state.value.browser?.path) ?: return
-        browse(parent)
+        val path = _state.value.browser?.path ?: return
+        val parent = parentPath(path)
+        val home = _state.value.homeAccess?.takeIf { it.granted }?.home
+        // Acima de uma raiz (ou da pasta pessoal) o desktop não deixa ir: volta para as raízes.
+        val s = _state.value
+        val isRoot = path in roots || path in s.projects || path in s.extraDirs
+        browse(if (parent == null || path == home || (isRoot && (home == null || !path.startsWith(home)))) null else parent)
     }
 
     fun retryBrowse() = browse(_state.value.browser?.path)
 
-    /** Usa a pasta aberta no navegador como projeto. */
+    /** Usa a pasta aberta no navegador como projeto (ou a acrescenta às pastas extras). */
     fun pickBrowsed() {
-        val path = _state.value.browser?.path ?: return
-        _state.update { it.copy(projectPath = path, browser = null, error = null) }
+        val b = _state.value.browser ?: return
+        val path = b.path ?: return
+        _state.update {
+            when (b.target) {
+                BrowseTarget.Project -> it.copy(projectPath = path, browser = null, error = null)
+                BrowseTarget.Extra -> it.copy(
+                    extraDirs = if (path in it.extraDirs || path == it.projectPath.trim()) it.extraDirs else it.extraDirs + path,
+                    browser = null,
+                    error = null,
+                )
+            }
+        }
         browseJob?.cancel()
+    }
+
+    fun removeExtraDir(path: String) = _state.update { it.copy(extraDirs = it.extraDirs - path) }
+
+    // ---- Pasta pessoal ----
+
+    private fun loadHomeAccess() {
+        viewModelScope.launch {
+            try {
+                val access = deps.homeAccess()
+                _state.update { it.copy(homeAccess = access, homeAccessSupported = access != null) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Sem resposta: o navegador segue só com as pastas dos projetos.
+            }
+        }
+    }
+
+    /** Pede a confirmação antes de liberar a pasta pessoal do PC para este aparelho. */
+    fun askHomeAccess() = _state.update { it.copy(confirmHome = true) }
+
+    fun dismissHomeAccess() = _state.update { it.copy(confirmHome = false) }
+
+    fun grantHomeAccess() {
+        _state.update { it.copy(confirmHome = false) }
+        viewModelScope.launch {
+            try {
+                val access = deps.setHomeAccess(true)
+                _state.update { it.copy(homeAccess = access) }
+                browse(access.home.ifBlank { null })
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.userMessage) }
+            }
+        }
+    }
+
+    fun startNewFolder() = _state.update { s -> s.copy(browser = s.browser?.copy(creatingDir = true)) }
+
+    fun cancelNewFolder() = _state.update { s -> s.copy(browser = s.browser?.copy(creatingDir = false)) }
+
+    /** Cria [name] dentro da pasta aberta e entra nela. */
+    fun createFolder(name: String) {
+        val base = _state.value.browser?.path ?: return
+        val clean = name.trim()
+        if (clean.isEmpty() || clean.contains('/') || clean.contains('\\') || clean == "." || clean == "..") return
+        viewModelScope.launch {
+            try {
+                val created = deps.createDirectory(joinPath(base, clean))
+                browse(created)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _state.update { s -> s.copy(browser = s.browser?.copy(creatingDir = false, error = null), error = e.userMessage) }
+            }
+        }
     }
 
     fun closeBrowser() {
@@ -264,7 +370,7 @@ class NewSessionViewModel(private val deps: NewSessionDeps) : ViewModel() {
         _state.update { it.copy(phase = Phase.Creating, error = null) }
         flowJob = viewModelScope.launch {
             val created = try {
-                deps.create(s.provider, s.projectPath.trim(), s.permissionMode, s.modelId, s.effort)
+                deps.create(s.provider, s.projectPath.trim(), s.permissionMode, s.modelId, s.effort, s.extraDirs)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

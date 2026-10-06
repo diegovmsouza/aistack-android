@@ -3,6 +3,7 @@ package br.com.amberwrite.aistack.ui.designsystem.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -72,6 +73,7 @@ fun SurfaceCard(
     color: Color = AiTheme.colors.surface,
     borderColor: Color = AiTheme.colors.line,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val source = remember { MutableInteractionSource() }
@@ -83,7 +85,16 @@ fun SurfaceCard(
             .background(color)
             .border(1.dp, borderColor, shape)
             .then(
-                if (onClick != null) Modifier.clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick) else Modifier,
+                when {
+                    onClick != null && onLongClick != null -> Modifier.combinedClickable(
+                        interactionSource = source,
+                        indication = androidx.compose.material3.ripple(),
+                        onLongClick = onLongClick,
+                        onClick = onClick,
+                    )
+                    onClick != null -> Modifier.clickable(interactionSource = source, indication = androidx.compose.material3.ripple(), onClick = onClick)
+                    else -> Modifier
+                },
             )
             .padding(contentPadding),
         content = content,

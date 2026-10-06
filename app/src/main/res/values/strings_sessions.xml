@@ -33,6 +33,33 @@
     <string name="sessions_archived_notice">“%1$s” arquivada</string>
     <string name="sessions_unarchived_notice">“%1$s” voltou para a lista</string>
     <string name="sessions_undo">Desfazer</string>
+    <plurals name="sessions_selected_count">
+        <item quantity="one">%d selecionada</item>
+        <item quantity="other">%d selecionadas</item>
+    </plurals>
+    <string name="sessions_selection_clear">Sair da seleção</string>
+    <string name="sessions_selection_archive">Arquivar selecionadas</string>
+    <string name="sessions_selection_unarchive">Desarquivar selecionadas</string>
+    <string name="sessions_selection_delete">Excluir selecionadas</string>
+    <plurals name="sessions_delete_title">
+        <item quantity="one">Excluir %d conversa?</item>
+        <item quantity="other">Excluir %d conversas?</item>
+    </plurals>
+    <string name="sessions_delete_text">A conversa e o histórico dela são apagados do computador. Não dá para desfazer.</string>
+    <string name="sessions_delete_confirm">Excluir</string>
+    <plurals name="sessions_deleted_notice">
+        <item quantity="one">%d conversa excluída</item>
+        <item quantity="other">%d conversas excluídas</item>
+    </plurals>
+    <plurals name="sessions_archived_many_notice">
+        <item quantity="one">%d conversa arquivada</item>
+        <item quantity="other">%d conversas arquivadas</item>
+    </plurals>
+    <plurals name="sessions_unarchived_many_notice">
+        <item quantity="one">%d conversa voltou para a lista</item>
+        <item quantity="other">%d conversas voltaram para a lista</item>
+    </plurals>
+    <string name="sessions_select_cd">Selecionar “%1$s”</string>
     <string name="sessions_empty_title">Nenhuma conversa ainda</string>
     <string name="sessions_empty_body">Comece uma sessão aqui ou no desktop. Ela aparece nesta lista na hora.</string>
     <string name="sessions_no_results_title">Nada encontrado</string>

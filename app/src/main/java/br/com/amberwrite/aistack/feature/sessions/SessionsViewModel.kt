@@ -26,6 +26,7 @@ interface SessionsDeps {
     suspend fun reload()
     suspend fun rename(id: String, title: String)
     suspend fun archive(id: String, archived: Boolean)
+    suspend fun delete(id: String)
     fun setIncludeArchived(value: Boolean)
     fun retryConnection()
     fun now(): Long = System.currentTimeMillis()
@@ -44,6 +45,7 @@ private class ContainerSessionsDeps(private val c: AppContainer) : SessionsDeps 
     override suspend fun reload() = c.sessionsRepo.reload()
     override suspend fun rename(id: String, title: String) = c.sessionsRepo.rename(id, title)
     override suspend fun archive(id: String, archived: Boolean) = c.sessionsRepo.archive(id, archived)
+    override suspend fun delete(id: String) = c.sessionsRepo.delete(id)
     override fun setIncludeArchived(value: Boolean) = c.sessionsRepo.setIncludeArchived(value)
     override fun retryConnection() = c.retry()
 }
@@ -59,6 +61,11 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
 
     /** Aviso pós-arquivamento com opção de desfazer. */
     data class ArchivedNotice(val id: String, val title: String, val archived: Boolean)
+
+    /** Resultado de uma ação em lote (seleção múltipla). */
+    data class BulkNotice(val kind: Kind, val count: Int) {
+        enum class Kind { Archived, Unarchived, Deleted }
+    }
 
     data class UiState(
         val sections: List<SessionSection> = emptyList(),
@@ -77,6 +84,11 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
         val totalCount: Int = 0,
         val actionError: String? = null,
         val archivedNotice: ArchivedNotice? = null,
+        val bulkNotice: BulkNotice? = null,
+        /** Conversas marcadas no modo de seleção (vazio = fora do modo). */
+        val selection: Set<String> = emptySet(),
+        /** Toda a seleção já está arquivada: a ação em lote vira "desarquivar". */
+        val selectionArchived: Boolean = false,
         val content: ListContent = ListContent.Loading
     ) {
         val isFiltering: Boolean get() = query.isNotBlank() || project != null
@@ -90,6 +102,8 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
         val hidden: Set<String> = emptySet(),
         val actionError: String? = null,
         val notice: ArchivedNotice? = null,
+        val bulk: BulkNotice? = null,
+        val selection: Set<String> = emptySet(),
         val tick: Long = 0
     )
 
@@ -103,6 +117,7 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
         local
     ) { s, conn, pending, previews, l ->
         val visible = s.conversations.filterNot { it.id in l.hidden }
+        val selected = visible.filter { it.id in l.selection }
         val projects = projectsOf(visible)
         val project = l.project?.takeIf { it in projects }
         UiState(
@@ -119,7 +134,10 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
             pendingCount = pending.sumOf { it.permissions.size },
             totalCount = visible.size,
             actionError = l.actionError,
-            archivedNotice = l.notice
+            archivedNotice = l.notice,
+            bulkNotice = l.bulk,
+            selection = selected.mapTo(LinkedHashSet()) { it.id },
+            selectionArchived = selected.isNotEmpty() && selected.all { it.archived }
         ).let { ui ->
             ui.copy(content = listContentOf(ui.totalCount, ui.sections.sumOf { it.items.size }, s.loaded, s.error, conn))
         }
@@ -208,6 +226,57 @@ class SessionsViewModel(private val deps: SessionsDeps) : ViewModel() {
     }
 
     fun consumeNotice() = local.update { it.copy(notice = null) }
+
+    fun consumeBulkNotice() = local.update { it.copy(bulk = null) }
+
+    /** Toque longo: entra no modo de seleção (ou alterna a conversa, se já estiver nele). */
+    fun toggleSelection(id: String) = local.update {
+        it.copy(selection = if (id in it.selection) it.selection - id else it.selection + id)
+    }
+
+    fun clearSelection() = local.update { it.copy(selection = emptySet()) }
+
+    /** Arquiva a seleção; se ela toda já estiver arquivada, desarquiva. */
+    fun archiveSelection() {
+        val ui = state.value
+        val ids = ui.selection.toList().takeIf { it.isNotEmpty() } ?: return
+        val archived = !ui.selectionArchived
+        val hide = archived && !deps.sessions.value.includeArchived
+        local.update { it.copy(selection = emptySet(), hidden = if (hide) it.hidden + ids else it.hidden) }
+        runBulk(ids, if (archived) BulkNotice.Kind.Archived else BulkNotice.Kind.Unarchived) { deps.archive(it, archived) }
+    }
+
+    /** Exclui a seleção no desktop (o diálogo de confirmação fica na tela). */
+    fun deleteSelection() {
+        val ids = state.value.selection.toList().takeIf { it.isNotEmpty() } ?: return
+        local.update { it.copy(selection = emptySet(), hidden = it.hidden + ids) }
+        runBulk(ids, BulkNotice.Kind.Deleted) { deps.delete(it) }
+    }
+
+    private fun runBulk(ids: List<String>, kind: BulkNotice.Kind, action: suspend (String) -> Unit) {
+        viewModelScope.launch {
+            var done = 0
+            var error: String? = null
+            for (id in ids) {
+                try {
+                    action(id)
+                    done++
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    error = e.userMessage
+                }
+            }
+            local.update {
+                it.copy(
+                    hidden = it.hidden - ids.toSet(),
+                    bulk = if (done > 0) BulkNotice(kind, done) else it.bulk,
+                    actionError = error ?: it.actionError,
+                )
+            }
+            if (error != null) runCatching { deps.reload() }
+        }
+    }
 
     fun consumeActionError() = local.update { it.copy(actionError = null) }
 }

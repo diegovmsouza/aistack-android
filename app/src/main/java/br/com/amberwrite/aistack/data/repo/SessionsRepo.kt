@@ -141,6 +141,12 @@ class SessionsRepo(
         find(id)?.let { upsert(it.copy(archived = archived)) }
     }
 
+    /** Exclui a conversa no desktop (histórico incluído); some da lista na hora. */
+    suspend fun delete(id: String) {
+        rpc.call("deleteConversation", params("id" to id))
+        _state.update { s -> s.copy(conversations = s.conversations.filterNot { it.id == id }) }
+    }
+
     suspend fun fork(id: String, upToTurn: Long): Conversation {
         val c = rpc.call("forkConversation", params("id" to id, "upToTurn" to upToTurn)).asObj()?.let(Conversation::parse)
             ?: throw RpcException(RpcException.Kind.REMOTE, "Resposta inválida do desktop.")

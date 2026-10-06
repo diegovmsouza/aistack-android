@@ -49,4 +49,19 @@
     <string name="newsession_browser_error_title">Não foi possível abrir a pasta</string>
     <string name="newsession_browser_truncated">Lista grande; mostrando só parte das pastas.</string>
     <string name="newsession_browser_close">Fechar</string>
+    <string name="newsession_browser_title_extra">Adicionar pasta extra</string>
+    <string name="newsession_browser_home_grant">Liberar a pasta pessoal do PC</string>
+    <string name="newsession_browser_home_grant_body">Navegue a partir de ~/, crie pastas e use qualquer uma como projeto.</string>
+    <string name="newsession_home_confirm_title">Liberar a pasta pessoal?</string>
+    <string name="newsession_home_confirm_text">Este celular passa a ver e usar as pastas da sua pasta pessoal no PC, e a criar pastas novas nela. Chaves, tokens e senhas (como ~/.ssh) continuam bloqueados. O desktop mostra um aviso, e revogar o aparelho tira o acesso.</string>
+    <string name="newsession_home_confirm">Liberar</string>
+    <string name="newsession_cancel">Cancelar</string>
+    <string name="newsession_new_folder">Nova pasta</string>
+    <string name="newsession_new_folder_title">Nova pasta</string>
+    <string name="newsession_new_folder_placeholder">nome-do-projeto</string>
+    <string name="newsession_new_folder_create">Criar</string>
+    <string name="newsession_extra_title">Pastas extras</string>
+    <string name="newsession_extra_hint">Lidas junto com o projeto.</string>
+    <string name="newsession_extra_add">Adicionar pasta</string>
+    <string name="newsession_extra_remove_cd">Remover a pasta extra %1$s</string>
 </resources>

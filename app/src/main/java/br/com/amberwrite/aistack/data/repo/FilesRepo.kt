@@ -3,6 +3,7 @@ package br.com.amberwrite.aistack.data.repo
 import br.com.amberwrite.aistack.core.rpc.RpcCaller
 import br.com.amberwrite.aistack.core.rpc.RpcException
 import br.com.amberwrite.aistack.core.rpc.asObj
+import br.com.amberwrite.aistack.core.rpc.bool
 import br.com.amberwrite.aistack.core.rpc.str
 import br.com.amberwrite.aistack.data.model.DirListing
 import br.com.amberwrite.aistack.data.model.FileContent
@@ -13,6 +14,20 @@ import java.util.Base64
 class FilesRepo(private val rpc: RpcCaller) {
 
     /** Lista uma pasta. `path` nulo devolve as raízes permitidas (projetos e `extraDirs`). */
+    /** Acesso do aparelho à pasta pessoal do PC; `null` em desktop antigo (sem o recurso). */
+    suspend fun homeAccess(): HomeAccess? = try {
+        HomeAccess.parse(rpc.call("getHomeAccess").asObj() ?: throw invalid())
+    } catch (e: RpcException) {
+        if (e.kind == RpcException.Kind.UNKNOWN_METHOD) null else throw e
+    }
+
+    suspend fun setHomeAccess(enabled: Boolean): HomeAccess =
+        HomeAccess.parse(rpc.call("setHomeAccess", params("enabled" to enabled)).asObj() ?: throw invalid())
+
+    /** Cria uma pasta nova no PC (dentro da pasta pessoal) e devolve o caminho dela. */
+    suspend fun createDirectory(path: String): String =
+        rpc.call("createDirectory", params("path" to path)).asObj()?.str("path") ?: throw invalid()
+
     suspend fun listDir(path: String?): DirListing {
         val res = rpc.call("listDir", params("path" to path))
         return DirListing.parse(res.asObj() ?: throw invalid())
@@ -64,5 +79,12 @@ class FilesRepo(private val rpc: RpcCaller) {
         const val READ_MAX_NO_FRAG = 32_768
         const val READ_MIN = 1024
         const val UPLOAD_MAX_BYTES = 6_000_000
+    }
+}
+
+/** Pasta pessoal do PC liberada (ou não) para este aparelho. */
+data class HomeAccess(val granted: Boolean, val home: String) {
+    companion object {
+        fun parse(o: com.google.gson.JsonObject) = HomeAccess(o.bool("granted") == true, o.str("home").orEmpty())
     }
 }

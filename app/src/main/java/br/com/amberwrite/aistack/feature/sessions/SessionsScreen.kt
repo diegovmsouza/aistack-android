@@ -55,6 +55,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -90,6 +91,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.amberwrite.aistack.R
 import br.com.amberwrite.aistack.core.relay.ConnectionState
 import br.com.amberwrite.aistack.feature.common.AiTextInput
+import br.com.amberwrite.aistack.feature.common.ConfirmDialog
 import br.com.amberwrite.aistack.feature.common.bannerDetail
 import br.com.amberwrite.aistack.feature.common.containerViewModel
 import br.com.amberwrite.aistack.feature.common.label
@@ -158,6 +160,24 @@ fun SessionsScreen(
         val result = snackbar.showSnackbar(msg, actionLabel = undoLabel, duration = SnackbarDuration.Short)
         if (result == SnackbarResult.ActionPerformed) vm.undoArchive() else vm.consumeNotice()
     }
+    val bulkMsg = state.bulkNotice?.let {
+        pluralStringResource(
+            when (it.kind) {
+                SessionsViewModel.BulkNotice.Kind.Archived -> R.plurals.sessions_archived_many_notice
+                SessionsViewModel.BulkNotice.Kind.Unarchived -> R.plurals.sessions_unarchived_many_notice
+                SessionsViewModel.BulkNotice.Kind.Deleted -> R.plurals.sessions_deleted_notice
+            },
+            it.count, it.count,
+        )
+    }
+    LaunchedEffect(state.bulkNotice) {
+        val msg = bulkMsg ?: return@LaunchedEffect
+        snackbar.showSnackbar(msg, duration = SnackbarDuration.Short)
+        vm.consumeBulkNotice()
+    }
+    val selecting = state.selection.isNotEmpty()
+    var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = selecting) { vm.clearSelection() }
     LaunchedEffect(state.actionError) {
         val msg = state.actionError ?: return@LaunchedEffect
         haptics.perform(HapticKind.Reject)
@@ -168,7 +188,32 @@ fun SessionsScreen(
     Box(modifier.fillMaxSize().background(c.bg)) {
         Column(Modifier.fillMaxSize()) {
             val scrolled by remember { derivedStateOf { listState.canScrollBackward } }
-            AiStackTopBar(
+            if (selecting) AiStackTopBar(
+                title = pluralStringResource(R.plurals.sessions_selected_count, state.selection.size, state.selection.size),
+                navigationIcon = Lucide.X,
+                navigationContentDescription = stringResource(R.string.sessions_selection_clear),
+                onNavigationClick = vm::clearSelection,
+                scrolled = scrolled,
+                haptics = haptics,
+                actions = {
+                    AiIconButton(
+                        icon = Lucide.Archive,
+                        contentDescription = stringResource(
+                            if (state.selectionArchived) R.string.sessions_selection_unarchive else R.string.sessions_selection_archive
+                        ),
+                        onClick = { haptics.perform(HapticKind.Confirm); vm.archiveSelection() },
+                        size = 48.dp,
+                        haptics = haptics,
+                    )
+                    AiIconButton(
+                        icon = Lucide.Trash2,
+                        contentDescription = stringResource(R.string.sessions_selection_delete),
+                        onClick = { confirmDelete = true },
+                        size = 48.dp,
+                        haptics = haptics,
+                    )
+                },
+            ) else AiStackTopBar(
                 title = stringResource(R.string.sessions_title),
                 subtitle = state.connection.label(),
                 navigationIcon = null,
@@ -217,12 +262,13 @@ fun SessionsScreen(
                 onOpenChat = onOpenChat,
                 onArchive = { item -> vm.archive(item.id, !item.conversation.archived) },
                 onRename = { item -> renameId = item.id },
+                onToggleSelect = { item -> haptics.perform(HapticKind.Tick); vm.toggleSelection(item.id) },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
             )
         }
 
         val fabExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
-        NewSessionFab(
+        if (!selecting) NewSessionFab(
             expanded = fabExpanded,
             onClick = onNewSession,
             haptics = haptics,
@@ -250,7 +296,19 @@ fun SessionsScreen(
     }
 
     val renameTarget = renameId?.let { id -> state.sections.firstNotNullOfOrNull { s -> s.items.firstOrNull { it.id == id } } }
-    if (renameId != null) {
+    if (confirmDelete) {
+        val n = state.selection.size
+        ConfirmDialog(
+            title = pluralStringResource(R.plurals.sessions_delete_title, n, n),
+            text = stringResource(R.string.sessions_delete_text),
+            confirmLabel = stringResource(R.string.sessions_delete_confirm),
+            dismissLabel = stringResource(R.string.sessions_cancel),
+            destructive = true,
+            onConfirm = { confirmDelete = false; haptics.perform(HapticKind.Confirm); vm.deleteSelection() },
+            onDismiss = { confirmDelete = false },
+        )
+    }
+        if (renameId != null) {
         if (renameTarget == null) {
             LaunchedEffect(renameId, state.loaded) { if (state.loaded) renameId = null }
         } else {
@@ -419,6 +477,7 @@ private fun SessionsBody(
     onOpenChat: (String) -> Unit,
     onArchive: (SessionItem) -> Unit,
     onRename: (SessionItem) -> Unit,
+    onToggleSelect: (SessionItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = AiTheme.colors
@@ -522,6 +581,8 @@ private fun SessionsBody(
                     onOpenChat = onOpenChat,
                     onArchive = onArchive,
                     onRename = onRename,
+                    selection = state.selection,
+                    onToggleSelect = onToggleSelect,
                 )
             }
         }
@@ -546,8 +607,11 @@ private fun SessionsList(
     onOpenChat: (String) -> Unit,
     onArchive: (SessionItem) -> Unit,
     onRename: (SessionItem) -> Unit,
+    selection: Set<String>,
+    onToggleSelect: (SessionItem) -> Unit,
 ) {
     val reduced = AiTheme.reducedMotion
+    val selecting = selection.isNotEmpty()
     val now = System.currentTimeMillis()
     LazyColumn(
         state = listState,
@@ -565,10 +629,12 @@ private fun SessionsList(
             items(section.items, key = { it.id }, contentType = { "row" }) { item ->
                 SwipeableSessionRow(
                     item = item,
-                    selected = item.id == selectedId,
+                    selected = item.id == selectedId || item.id in selection,
+                    selecting = selecting,
                     now = now,
                     haptics = haptics,
-                    onOpen = { onOpenChat(item.id) },
+                    onOpen = { if (selecting) onToggleSelect(item) else onOpenChat(item.id) },
+                    onLongPress = { onToggleSelect(item) },
                     onArchive = { onArchive(item) },
                     onRename = { onRename(item) },
                     modifier = Modifier.then(if (reduced) Modifier else Modifier.animateItem()),
@@ -600,9 +666,11 @@ private fun GroupHeader(group: DateGroup, modifier: Modifier = Modifier) {
 private fun SwipeableSessionRow(
     item: SessionItem,
     selected: Boolean,
+    selecting: Boolean,
     now: Long,
     haptics: AiHaptics,
     onOpen: () -> Unit,
+    onLongPress: () -> Unit,
     onArchive: () -> Unit,
     onRename: () -> Unit,
     modifier: Modifier = Modifier,
@@ -642,6 +710,7 @@ private fun SwipeableSessionRow(
             )
         },
         onDismiss = onDismiss,
+        gesturesEnabled = !selecting,
         backgroundContent = {
             SwipeBackground(
                 direction = swipe.dismissDirection,
@@ -650,7 +719,7 @@ private fun SwipeableSessionRow(
             )
         },
     ) {
-        SessionRow(item = item, selected = selected, now = now, onClick = onOpen)
+        SessionRow(item = item, selected = selected, now = now, onClick = onOpen, onLongClick = onLongPress)
     }
 }
 
@@ -688,7 +757,7 @@ private fun SwipeBackground(direction: SwipeToDismissBoxValue, archiveLabel: Str
 }
 
 @Composable
-private fun SessionRow(item: SessionItem, selected: Boolean, now: Long, onClick: () -> Unit) {
+private fun SessionRow(item: SessionItem, selected: Boolean, now: Long, onClick: () -> Unit, onLongClick: () -> Unit) {
     val c = AiTheme.colors
     val conv = item.conversation
     val openCd = stringResource(R.string.sessions_open_cd, conv.displayTitle)
@@ -696,6 +765,7 @@ private fun SessionRow(item: SessionItem, selected: Boolean, now: Long, onClick:
     val border by animateColorAsState(if (selected) c.accent.copy(alpha = 0.5f) else c.line, AiTheme.motion.fade(), label = "rowBorder")
     SurfaceCard(
         onClick = onClick,
+        onLongClick = onLongClick,
         color = bg,
         borderColor = border,
         modifier = Modifier

@@ -43,6 +43,9 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -62,6 +65,7 @@ import br.com.amberwrite.aistack.data.model.ModelInfo
 import br.com.amberwrite.aistack.data.model.PermissionMode
 import br.com.amberwrite.aistack.data.model.Provider
 import br.com.amberwrite.aistack.feature.common.AiTextInput
+import br.com.amberwrite.aistack.feature.common.ConfirmDialog
 import br.com.amberwrite.aistack.feature.common.ErrorStrip
 import br.com.amberwrite.aistack.feature.common.containerViewModel
 import br.com.amberwrite.aistack.feature.sessions.SkeletonBlock
@@ -197,6 +201,7 @@ fun NewSessionScreen(onBack: () -> Unit, onCreated: (String) -> Unit) {
     }
 
     state.browser?.let { browser ->
+        val home = state.homeAccess
         DirBrowserSheet(
             browser = browser,
             onDismiss = vm::closeBrowser,
@@ -205,7 +210,24 @@ fun NewSessionScreen(onBack: () -> Unit, onCreated: (String) -> Unit) {
             onHome = { vm.browse(null) },
             onRetry = vm::retryBrowse,
             onPick = vm::pickBrowsed,
+            showGrantHome = browser.path == null && home != null && !home.granted,
+            canCreateFolder = home?.granted == true && browser.path != null && !browser.loading,
+            onGrantHome = vm::askHomeAccess,
+            onNewFolder = vm::startNewFolder,
             haptics = haptics
+        )
+        if (browser.creatingDir) {
+            NewFolderDialog(onConfirm = vm::createFolder, onDismiss = vm::cancelNewFolder)
+        }
+    }
+    if (state.confirmHome) {
+        ConfirmDialog(
+            title = stringResource(R.string.newsession_home_confirm_title),
+            text = stringResource(R.string.newsession_home_confirm_text),
+            confirmLabel = stringResource(R.string.newsession_home_confirm),
+            dismissLabel = stringResource(R.string.newsession_cancel),
+            onConfirm = { haptics.perform(HapticKind.Confirm); vm.grantHomeAccess() },
+            onDismiss = vm::dismissHomeAccess,
         )
     }
 }
@@ -270,7 +292,7 @@ private fun ProjectSection(state: NewSessionViewModel.UiState, vm: NewSessionVie
                     AiChip(
                         text = stringResource(R.string.newsession_project_browse),
                         leadingIcon = Lucide.FolderOpen,
-                        onClick = if (state.busy) null else vm::openBrowser,
+                        onClick = if (state.busy) null else ({ vm.openBrowser() }),
                         color = AiTheme.colors.fg2,
                         haptics = haptics,
                         modifier = Modifier
@@ -304,6 +326,31 @@ private fun ProjectSection(state: NewSessionViewModel.UiState, vm: NewSessionVie
                 ),
                 style = AiTheme.typography.caption,
                 color = if (err == ProjectPathError.NotAbsolute) AiTheme.colors.danger else AiTheme.colors.fg3
+            )
+        }
+        Text(
+            stringResource(R.string.newsession_extra_title) + " · " + stringResource(R.string.newsession_extra_hint),
+            style = AiTheme.typography.caption,
+            color = AiTheme.colors.fg3,
+        )
+        ChipRow {
+            state.extraDirs.forEach { path ->
+                val removeCd = stringResource(R.string.newsession_extra_remove_cd, path)
+                AiChip(
+                    text = shortProjectName(path),
+                    leadingIcon = Lucide.Folder,
+                    onRemove = if (state.busy) null else ({ vm.removeExtraDir(path) }),
+                    haptics = haptics,
+                    modifier = Modifier.minimumInteractiveComponentSize().semantics { contentDescription = removeCd },
+                )
+            }
+            AiChip(
+                text = stringResource(R.string.newsession_extra_add),
+                leadingIcon = Lucide.Plus,
+                onClick = if (state.busy) null else ({ vm.openBrowser(NewSessionViewModel.BrowseTarget.Extra) }),
+                color = AiTheme.colors.fg2,
+                haptics = haptics,
+                modifier = Modifier.minimumInteractiveComponentSize(),
             )
         }
     }
@@ -574,6 +621,10 @@ private fun DirBrowserSheet(
     onHome: () -> Unit,
     onRetry: () -> Unit,
     onPick: () -> Unit,
+    showGrantHome: Boolean,
+    canCreateFolder: Boolean,
+    onGrantHome: () -> Unit,
+    onNewFolder: () -> Unit,
     haptics: AiHaptics,
 ) {
     val c = AiTheme.colors
@@ -601,7 +652,10 @@ private fun DirBrowserSheet(
                 )
                 Column(Modifier.weight(1f).padding(horizontal = 4.dp)) {
                     Text(
-                        stringResource(R.string.newsession_browser_title),
+                        stringResource(
+                            if (browser.target == NewSessionViewModel.BrowseTarget.Extra) R.string.newsession_browser_title_extra
+                            else R.string.newsession_browser_title
+                        ),
                         style = AiTheme.typography.heading,
                         color = c.fg,
                         modifier = Modifier.semantics { heading() }
@@ -674,7 +728,9 @@ private fun DirBrowserSheet(
                             },
                             modifier = Modifier.fillMaxWidth().padding(16.dp)
                         )
-                        2 -> EmptyState(
+                        2 -> if (showGrantHome) Column(Modifier.fillMaxWidth()) {
+                            GrantHomeRow(onClick = { haptics.perform(HapticKind.Tick); onGrantHome() })
+                        } else EmptyState(
                             title = stringResource(R.string.newsession_browser_empty_title),
                             body = stringResource(R.string.newsession_browser_empty_body),
                             illustration = Illustration.NoSessions,
@@ -682,6 +738,11 @@ private fun DirBrowserSheet(
                             modifier = Modifier.fillMaxWidth().padding(16.dp)
                         )
                         else -> LazyColumn(Modifier.fillMaxWidth()) {
+                            if (showGrantHome) {
+                                item(key = "grant-home") {
+                                    GrantHomeRow(onClick = { haptics.perform(HapticKind.Tick); onGrantHome() })
+                                }
+                            }
                             if (browser.truncated) {
                                 item {
                                     Text(
@@ -723,16 +784,84 @@ private fun DirBrowserSheet(
                     }
                 }
             }
-            AiButton(
-                text = stringResource(R.string.newsession_browser_use),
-                onClick = onPick,
-                enabled = browser.path != null && !browser.loading,
-                size = ButtonSize.Large,
-                leadingIcon = Lucide.Check,
-                haptic = HapticKind.Confirm,
-                haptics = haptics,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                if (canCreateFolder) {
+                    AiButton(
+                        text = stringResource(R.string.newsession_new_folder),
+                        onClick = onNewFolder,
+                        variant = ButtonVariant.Secondary,
+                        size = ButtonSize.Large,
+                        leadingIcon = Lucide.Plus,
+                        haptics = haptics,
+                    )
+                }
+                AiButton(
+                    text = stringResource(R.string.newsession_browser_use),
+                    onClick = onPick,
+                    enabled = browser.path != null && !browser.loading,
+                    size = ButtonSize.Large,
+                    leadingIcon = Lucide.Check,
+                    haptic = HapticKind.Confirm,
+                    haptics = haptics,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun GrantHomeRow(onClick: () -> Unit) {
+    val c = AiTheme.colors
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(Lucide.FolderOpen, contentDescription = null, tint = c.accent, modifier = Modifier.size(20.dp))
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.newsession_browser_home_grant), style = AiTheme.typography.body, color = c.accent)
+            Text(stringResource(R.string.newsession_browser_home_grant_body), style = AiTheme.typography.caption, color = c.fg3)
+        }
+        Icon(Lucide.ChevronRight, contentDescription = null, tint = c.fg3, modifier = Modifier.size(16.dp))
+    }
+}
+
+@Composable
+private fun NewFolderDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
+    val c = AiTheme.colors
+    var text by rememberSaveable { mutableStateOf("") }
+    val valid = text.isNotBlank() && !text.contains('/') && !text.contains('\\') && text.trim() != "." && text.trim() != ".."
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = c.surface,
+        titleContentColor = c.fg,
+        textContentColor = c.fg2,
+        shape = AiTheme.shapes.xl,
+        title = { Text(stringResource(R.string.newsession_new_folder_title), style = AiTheme.typography.title) },
+        text = {
+            AiTextInput(
+                value = text,
+                onValueChange = { text = it.take(120) },
+                placeholder = stringResource(R.string.newsession_new_folder_placeholder),
+                singleLine = true,
+                mono = true,
+                imeAction = ImeAction.Done,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            AiButton(text = stringResource(R.string.newsession_new_folder_create), onClick = { onConfirm(text) }, enabled = valid)
+        },
+        dismissButton = {
+            AiButton(text = stringResource(R.string.newsession_cancel), onClick = onDismiss, variant = ButtonVariant.Ghost)
+        },
+    )
 }
