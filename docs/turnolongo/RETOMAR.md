@@ -11,6 +11,7 @@ Sobrescreva antes de cada pausa e ao trocar de assunto (até 60 linhas). Regras:
 - Ícones: todos vetoriais (adaptive + monochrome), sem PNG.
 - CONCLUÍDO 11:15: a CI do main ficou verde (correção do fix/ci-main, de outra sessão), a v0.4.8 foi publicada às 13:57Z e depois veio a v0.4.9. Nada pendente; o turno foi encerrado.
 - PARADA 2026-10-05 (ordem do Diego): nada em curso. Depois da entrega: 6628814 (menu / sem ícones), 8f90b07 (ícones Codex/Kimi/Qwen com flags de arco explícitas, verificado no emulator-5556). Sem branches nem PRs abertos; main = origin/main. Próximo passo: nenhum; só retomar a pedido.
+- ENCERRADO 2026-10-07 (/turnolongo encerrar): depois da parada vieram 5005dc1 (flood ao arquivar), e740d28 (seleção múltipla + pasta pessoal do PC na nova sessão; desktop e95993b/v0.4.64) e 14e8fbd (X25519 efêmera no hello, R-173, validado no S25+). Nada em curso. Lacuna conhecida: editar pastas extras de conversa existente pelo celular.
 - 10:2x: o menu / do celular ficou sem ícones, só o texto /comando (6628814, verificado no emulador).
 - Banco de dev antigo: ~/.aistack-mobile-dev/aistack.db.pre-0005 (checksum da migração 3 divergia). Pasta descartável ~/aistack-e2e.
 
